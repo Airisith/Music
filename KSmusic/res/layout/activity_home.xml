@@ -1,0 +1,87 @@
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tabhost"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/start_back"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#00000000"
+        android:orientation="vertical" >
+
+        <RelativeLayout
+            android:id="@+id/home_tablayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" >
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000" >
+            </TabWidget>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/android:id/tabs"
+                android:background="#FFFFFF" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/home_buttomLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="#00000000" >
+
+            <include layout="@layout/homeb_layout"/>
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" 
+            android:layout_below="@id/home_tablayout"
+            android:layout_above="@id/home_buttomLayout"
+            >
+
+            <RelativeLayout
+                android:id="@+id/home_tabFirst"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="#00000000"
+                android:orientation="vertical" >
+
+                <ListView
+                    android:id="@+id/home_localListView"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:drawSelectorOnTop="false"
+                    android:padding="5dp"
+                    android:scrollbars="vertical" />
+                <!-- 使用 android内置ID -->
+                <!-- 选中时颜色不会显示在最上面，导致字被遮住 -->
+                <!-- 垂直滚动条 -->
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/home_tabSecond"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="#00000000"
+                android:orientation="vertical" >
+
+                <AnalogClock
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true" >
+                </AnalogClock>
+            </RelativeLayout>
+        </FrameLayout>
+    </RelativeLayout>
+
+</TabHost>

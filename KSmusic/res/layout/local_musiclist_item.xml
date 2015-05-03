@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/localListItem"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:orientation="vertical" >
+    <TextView
+        android:id="@+id/localListTitel"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:text="歌曲名字"
+        />
+    <TextView
+        android:id="@+id/localListArtist"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:layout_below="@id/localListTitel"
+        android:text="艺术家"
+        />
+    <TextView
+        android:id="@+id/localListTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00000000"
+        android:textColor="#FFFFFF"
+        android:textSize="10sp"
+        android:layout_alignBottom="@id/localListTitel"
+        android:layout_alignParentRight="true"
+        android:text="时间"
+        />
+
+</RelativeLayout>
