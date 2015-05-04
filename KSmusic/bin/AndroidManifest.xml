@@ -15,8 +15,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.airisith.ksmusic.StartActivity"
-            android:label="@string/app_name" 
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,15 +25,20 @@
         </activity>
         <activity
             android:name="com.airisith.ksmusic.HomeActivity"
-            android:theme="@android:style/Theme.NoTitleBar"
             android:launchMode="singleTask"
-            >
+            android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
-        <service
-            android:name="com.airisith.ksmusic.MusicService"
-            >
+        <activity
+            android:name="com.airisith.ksmusic.MusicView"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.NoTitleBar" >
+        </activity>
+
+        <service android:name="com.airisith.ksmusic.MusicService" >
         </service>
     </application>
-	<uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 </manifest>

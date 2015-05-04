@@ -1,5 +1,10 @@
 package com.airisith.modle;
 
+import com.airisith.util.Constans;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 
 
@@ -39,6 +44,16 @@ public class MusicInfo {
 	}
 	public String getArtist() {
 		return artist;
+	}
+	public String getAbbrArtist(){
+		String abbrArtist = null;
+		if(artist.length() > 20){
+			abbrArtist = artist.substring(0, 20) + "...";
+		}
+		else {
+			abbrArtist = artist;
+		}
+		return abbrArtist;
 	}
 	public void setArtist(String artist) {
 		this.artist = artist;
@@ -90,5 +105,36 @@ public class MusicInfo {
 	public void setAlbum_bitmap(Bitmap album_bitmap) {
 		this.album_bitmap = album_bitmap;
 	}
-		 
+
+	/**
+	 *  储存播放状态，ACtivity切换时或者下次打开时继续播放
+	 * @param context
+	 * @param current_MusicList
+	 * @param current_mode
+	 * @param current_positon
+	 */
+	public static void putCurrentMusicInfo(Context context, int current_MusicList, int current_mode, int current_positon){
+		SharedPreferences sp = context.getSharedPreferences(Constans.PREFERENCES_NAME_MUSIC_STATE, Context.MODE_APPEND);
+		//存入数据
+		Editor editor = sp.edit();
+		editor.putInt("MUSIC_LIST_ID", current_MusicList);
+		editor.putInt("CURRENT_MODE", current_mode);
+		editor.putInt("CURRENT_POSITION", current_positon);
+	    editor.commit();
+	}
+	
+	/**
+	 * 获取播放状态
+	 * @param context
+	 * @return 歌曲列表：0为本地... , 循环模式，歌曲位置
+	 */
+	public static int[] getCurrentMusicInfo(Context context){
+		int[] state = new int[3];
+		SharedPreferences sp = context.getSharedPreferences(Constans.PREFERENCES_NAME_MUSIC_STATE, Context.MODE_APPEND);
+		state[0] = sp.getInt("MUSIC_LIST_ID", 0);
+		state[1] = sp.getInt("CURRENT_MODE", 3);
+		state[2] = sp.getInt("CURRENT_POSITION", 0);
+		return state;
+	}
+	
 }

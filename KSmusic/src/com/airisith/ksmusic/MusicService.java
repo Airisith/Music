@@ -19,11 +19,13 @@ import com.airisith.util.Constans;
 
 @SuppressLint("NewApi")
 public class MusicService extends Service {
+	private static String TAG = "MusicService";
+	
 	private static MediaPlayer mediaPlayer = new MediaPlayer(); // 媒体播放器对象
 	private String path; // 音乐文件路径
 	@SuppressWarnings("unused")
 	private boolean isPause; // 暂停状态
-	private String TAG = "MusicService";
+	private static String FrontActivity = Constans.ACTIVITY_HOME; //当前activity，用于结束广播发送给哪个Activity
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -35,6 +37,7 @@ public class MusicService extends Service {
 		path = intent.getStringExtra("url");
 		int cmd = intent.getIntExtra("CMD",0);
 		int rate = intent.getIntExtra("rate", 0);
+		FrontActivity = intent.getStringExtra("Activity");
 		Log.w(TAG, "CMD:"+cmd+",rate"+rate);
 		if (cmd == Constans.PLAY_CMD) {
 			if (rate >= 0) {
@@ -46,7 +49,10 @@ public class MusicService extends Service {
 			pause();
 		} else if (cmd == Constans.STOP_CMD) {
 			stop();
+		}else {
+			//do nothing,只是为了通知service， Activity改变了
 		}
+			
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -136,13 +142,18 @@ public class MusicService extends Service {
 					Message message = handler.obtainMessage();
 					int current = mediaPlayer.getCurrentPosition();
 					int total = mediaPlayer.getDuration();
-					String time = formatTime(current, total);
+					int progress = current*200/total;
+					String[] time = formatTime(current, total);
 					message.obj = time;
+					message.what = progress;
 					handler.sendMessage(message);
 				}
 			}, 1000, 1000);
 		} else {
-			timer.cancel();
+			try {
+				timer.cancel();
+			} catch (Exception e) {
+			}
 		}
 
 	}
@@ -153,12 +164,13 @@ public class MusicService extends Service {
 	 * @param time
 	 * @return
 	 */
-	private static String formatTime(int currentTime, int totalTime) {
+	private static String[] formatTime(int currentTime, int totalTime) {
 		String current_mStr, current_sStr, total_mStr, total_sStr;
 		int current_m = (currentTime / 1000) / 60;
 		int current_s = (currentTime / 1000) % 60;
 		int total_m = (totalTime / 1000) / 60;
 		int total_s = (totalTime / 1000) % 60;
+		String[] timeStr = new String[2];
 		if (current_m < 10) {
 			current_mStr = "0" + current_m;
 		} else {
@@ -179,9 +191,9 @@ public class MusicService extends Service {
 		} else {
 			total_sStr = "" + total_s;
 		}
-
-		return current_mStr + ":" + current_sStr + "-" + total_mStr + ":"
-				+ total_sStr;
+		timeStr[0] = current_mStr + ":" + current_sStr;
+		timeStr[1] = total_mStr + ":" + total_sStr;
+		return timeStr;
 	}
 
 	/**
@@ -195,7 +207,13 @@ public class MusicService extends Service {
 		@Override
 		public void onCompletion(MediaPlayer mp) {
 			Intent intent = new Intent();
-			intent.setAction(Constans.MUSIC_END_ACTION);
+			if (Constans.ACTIVITY_HOME == FrontActivity) {
+				intent.setAction(Constans.MUSIC_END_ACTION_HOME);
+			} else if(Constans.ACTIVITY_MUSIC == FrontActivity){
+				intent.setAction(Constans.MUSIC_END_ACTION_MUSIC);
+			} else {
+				intent.setAction(Constans.MUSIC_END_ACTION_HOME);
+			}
 			sendBroadcast(intent);
 		}
 	}

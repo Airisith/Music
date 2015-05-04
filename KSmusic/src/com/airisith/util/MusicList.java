@@ -2,10 +2,8 @@ package com.airisith.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
-import com.airisith.ksmusic.R;
 import com.airisith.modle.MusicInfo;
 
 import android.content.Context;
@@ -13,8 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.ExpandableListView;
 
 public class MusicList {
 
@@ -79,25 +76,16 @@ public class MusicList {
 		return musicInfosInfos;
 	}
 
-	/** 
-     * 填充列表 
-     * @param musicInfos 
-     */  
-    public static void setListAdpter(Context context, List<MusicInfo> musicInfos, ListView listView) {  
-        List<HashMap<String, String>> musiclist = new ArrayList<HashMap<String, String>>();  
-        for (Iterator<MusicInfo> iterator = musicInfos.iterator(); iterator.hasNext();) {  
-            MusicInfo musicInfo = (MusicInfo) iterator.next();  
-            HashMap<String, String> map = new HashMap<String, String>();  
-            map.put("title", musicInfo.getAbbrTitle());  
-            map.put("Artist", musicInfo.getArtist());  
-            map.put("duration", (musicInfo.getDurationStr()));  
-            map.put("size", String.valueOf(musicInfo.getSize()));  
-            map.put("url", musicInfo.getUrl());  
-            musiclist.add(map);  
-        }  
-        SimpleAdapter localListAdapter = new SimpleAdapter(context, musiclist,  
-                R.layout.local_musiclist_item, new String[] { "title", "Artist", "duration" },  
-                new int[] { R.id.localListTitel, R.id.localListArtist, R.id.localListTime});  
-        listView.setAdapter(localListAdapter);
+	/**
+	 * 填充列表 
+	 * @param context
+	 * @param expandableListView
+	 * @param musicLists 所有音乐列表
+	 * @param groupLists 列表名称
+	 */
+    public static void setListAdpter(Context context,ExpandableListView expandableListView, 
+    		HashMap<Integer, List<MusicInfo>> musicLists, List<String> groupLists) {
+        ExpandableListAdapter listAdapter = new ExpandableListAdapter(context, groupLists, musicLists);
+        expandableListView.setAdapter(listAdapter);
     }  
 }
