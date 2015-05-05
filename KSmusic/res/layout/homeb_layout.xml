@@ -27,7 +27,7 @@
             android:layout_height="19dp"
             android:layout_toRightOf="@id/homeb_cap"
             android:background="#00000000"
-            android:text="听音乐"
+            android:text="音乐是人类灵魂的避难所"
             android:textColor="#ffffff"
             android:textSize="15sp" />
 
@@ -49,7 +49,7 @@
             android:layout_below="@id/homeb_time"
             android:layout_toRightOf="@id/homeb_cap"
             android:background="#00000000"
-            android:text="用KS"
+            android:text=""
             android:textColor="#ffffff"
             android:textSize="14sp" />
     </RelativeLayout>

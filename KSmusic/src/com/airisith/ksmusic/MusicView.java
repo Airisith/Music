@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
+import com.airisith.lyric.LrcView;
 import com.airisith.modle.MusicInfo;
 import com.airisith.util.Constans;
 import com.airisith.util.MusicList;
@@ -18,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -55,6 +57,9 @@ public class MusicView extends Activity{
 	private ImageView nextImageView;
 	private ImageView listImageView;
 	private SeekBar seekBar;
+	
+	// 歌词控件
+	public static LrcView lrcView;
 
 	private int currentListId = 0;
 
@@ -74,6 +79,7 @@ public class MusicView extends Activity{
 		nextImageView = (ImageView)findViewById(R.id.music_next);
 		listImageView = (ImageView)findViewById(R.id.music_list);
 		seekBar = (SeekBar)findViewById(R.id.music_progressbar);
+		lrcView = (LrcView)findViewById(R.id.music_lrcShowView);
 		
 		musicIntent = new Intent(getApplicationContext(), MusicService.class);
 		musicIntent.putExtra("Activity", "MusicView");
@@ -434,5 +440,48 @@ public class MusicView extends Activity{
 					rate, true);
 		}
 		
+	}
+	
+	/**
+	 * 屏蔽返回键原来的功能，以免程序异常退出出错
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode,KeyEvent event)
+	{
+		switch(keyCode)
+		{
+			case KeyEvent.KEYCODE_HOME:
+				Log.w(TAG, "KEYCODE_HOME");
+				return true;
+			case KeyEvent.KEYCODE_BACK:
+				Log.w(TAG, "KEYCODE_BACK");
+				Intent intent = new Intent(getApplicationContext(),
+						HomeActivity.class);
+				intent.putExtra("SERVICE_STATE", playState);
+				// activity发生改变，将消息传给Service
+				musicIntent.putExtra("Activity", Constans.ACTIVITY_HOME);
+				MusicCommad(currentMusicList, Constans.ACTIVITY_CHANGED_CMD, musicPosition, 0,
+						true); // 通知serviceActivity发生改变
+				unregisterReceiver(receiver); //停止接收广播，转由HomeActivity接收
+				startActivity(intent);
+				return true;
+			case KeyEvent.KEYCODE_CALL:
+				Log.w(TAG, "KEYCODE_CALL");
+				return true;
+			case KeyEvent.KEYCODE_SYM: 
+				Log.w(TAG, "KEYCODE_SYM");
+				return true;
+			case KeyEvent.KEYCODE_VOLUME_DOWN: 
+				Log.w(TAG, "KEYCODE_VOLUME_DOWN");
+				return true;
+			case KeyEvent.KEYCODE_VOLUME_UP: 
+				Log.w(TAG, "KEYCODE_VOLUME_UP");
+				return true;
+			case KeyEvent.KEYCODE_STAR: 
+				Log.w(TAG, "KEYCODE_STAR");
+				return true;
+		}
+		Log.w(TAG, "return super.onKeyDown(keyCode, event);");
+		return super.onKeyDown(keyCode, event);
 	}
 }

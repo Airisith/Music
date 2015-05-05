@@ -3,16 +3,27 @@ package com.airisith.ksmusic;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 
-public class StartActivity extends Activity {
+public class Splash extends Activity {
 
+	private final int SPLASH_DISPLAY_LENGHT = 3000; //延迟三秒 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_start);
-		Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-		startActivity(intent);
+		
+		 new Handler().postDelayed(new Runnable(){   
+			    
+	         @Override   
+	         public void run() {   
+	             Intent mainIntent = new Intent(Splash.this,HomeActivity.class);   
+	             Splash.this.startActivity(mainIntent);   
+	             Splash.this.finish();   
+	         }   
+	              
+	        }, SPLASH_DISPLAY_LENGHT);   
 	}
 
 	@Override

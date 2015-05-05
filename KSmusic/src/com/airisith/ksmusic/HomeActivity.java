@@ -45,11 +45,15 @@ import android.widget.SimpleExpandableListAdapter;
 import android.widget.TabHost;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 @SuppressWarnings("unused")
 public class HomeActivity extends Activity implements OnTabChangeListener {
 
 	private static final String TAG = "HomeActivity";
+
+	// 返回键退出延时时间
+	private long mExitTime;
 
 	private final String TAB_ID_MINE = "mine";
 	private final String TAB_ID_LIB = "musicLib";
@@ -88,6 +92,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_home);
+		Log.w(TAG, "onCreate");
 		expandableListView = (ExpandableListView) findViewById(R.id.home_ExpandingListView);
 		bcap = (ImageView) findViewById(R.id.homeb_cap);
 		bTitle = (TextView) findViewById(R.id.homeb_title);
@@ -99,7 +104,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		bInfoLayout = (RelativeLayout) findViewById(R.id.homeb_infoLayout);
 
 		try {
-			playState = getIntent().getIntExtra("SERVICE_STATE", Constans.STATE_STOP);
+			playState = getIntent().getIntExtra("SERVICE_STATE",
+					Constans.STATE_STOP);
 		} catch (Exception e) {
 		}
 		// 先设为空对象
@@ -223,18 +229,17 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			bArtis.setText(currentMusicInfo.getArtist());
 			if (Constans.STATE_STOP == playState) {
 				bPlay.setImageResource(R.drawable.play);
-				bTime.setText("00:00-"+currentMusicInfo.getDurationStr());
-			}else if (Constans.STATE_PUASE == playState) {
+				bTime.setText("00:00-" + currentMusicInfo.getDurationStr());
+			} else if (Constans.STATE_PUASE == playState) {
 				bPlay.setImageResource(R.drawable.play);
 				MusicService.updataTime(timeHandler, timer, true);
-			}
-			else {
+			} else {
 				MusicService.updataTime(timeHandler, timer, true);
 				bPlay.setImageResource(R.drawable.puase);
 				bcap.setImageBitmap(currentMusicInfo.getAlbum_bitmap());
 				bTitle.setText(currentMusicInfo.getAbbrTitle());
 				bArtis.setText(currentMusicInfo.getAbbrArtist());
-			} 
+			}
 
 		} catch (Exception e) {
 		}
@@ -350,7 +355,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 	 */
 	private void MusicCommad(List<MusicInfo> musicInfos, int playCommand,
 			int position, int rate, Boolean upTime) {
-		if ((musicInfos != null)&&(Constans.ACTIVITY_CHANGED_CMD != playCommand)) {
+		if ((musicInfos != null)
+				&& (Constans.ACTIVITY_CHANGED_CMD != playCommand)) {
 			MusicInfo musicInfo = musicInfos.get(position);
 			currentMusicInfo = musicInfo;
 			Log.w(TAG, "开始播放第" + position + "首歌");
@@ -367,7 +373,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			if (false == turnTOback) {
 				MusicService.updataTime(timeHandler, timer, upTime);
 			}
-				
+
 			MusicInfo.putCurrentMusicInfo(getApplicationContext(),
 					currentListId, playMode, musicPosition);
 			Log.w(TAG, "保存歌曲信息：list,mode,position:" + currentListId + playMode
@@ -386,7 +392,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (Constans.MODLE_ORDER == playMode) {
-				if (musicPosition<currentMusicList.size()-1) {
+				if (musicPosition < currentMusicList.size() - 1) {
 					musicPosition = musicPosition + 1;
 				} else {
 					musicPosition = 0;
@@ -436,7 +442,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 					musicPosition = (int) (Math.random() * currentMusicList
 							.size());
 				} else {
-					if (musicPosition<currentMusicList.size()-1) {
+					if (musicPosition < currentMusicList.size() - 1) {
 						musicPosition = musicPosition + 1;
 					} else {
 						musicPosition = 0;
@@ -453,8 +459,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 				intent.putExtra("SERVICE_STATE", playState);
 				// activity发生改变，将消息传给Service
 				musicIntent.putExtra("Activity", Constans.ACTIVITY_MUSIC);
-				MusicCommad(currentMusicList, Constans.ACTIVITY_CHANGED_CMD, musicPosition, 0,
-						true); // 通知serviceActivity发生改变
+				MusicCommad(currentMusicList, Constans.ACTIVITY_CHANGED_CMD,
+						musicPosition, 0, true); // 通知serviceActivity发生改变
 				startActivity(intent);
 				break;
 			case R.id.homeb_order:
@@ -489,10 +495,58 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		public void handleMessage(Message msg) {
 			try {
 				String[] time = (String[]) msg.obj;
-				bTime.setText(time[0]+"-"+time[1]);
+				bTime.setText(time[0] + "-" + time[1]);
 			} catch (Exception e) {
 			}
 		}
 
+	}
+
+	/**
+	 * 屏蔽返回键原来的功能，以免程序异常退出出错
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_HOME:
+			Log.w(TAG, "KEYCODE_HOME");
+			return true;
+		case KeyEvent.KEYCODE_BACK:
+			Log.w(TAG, "KEYCODE_BACK");
+			if ((System.currentTimeMillis() - mExitTime) > 2000) {
+				Object mHelperUtils;
+				Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+				mExitTime = System.currentTimeMillis();
+
+			} else {
+				try {
+					MusicService.updataTime(timeHandler, timer, false);
+					// 停止接收广播
+					HomeActivity.this.unregisterReceiver(receiver);
+					stopService(musicIntent);
+				} catch (Exception e) {
+				}
+				//finish();
+				System.exit(0); //退出整个程序，否则service，MusicView未退出，下次打开再次启动service会出错
+			}
+			return true;
+		case KeyEvent.KEYCODE_CALL:
+			Log.w(TAG, "KEYCODE_CALL");
+			return true;
+		case KeyEvent.KEYCODE_SYM:
+			Log.w(TAG, "KEYCODE_SYM");
+			return true;
+		case KeyEvent.KEYCODE_VOLUME_DOWN:
+			Log.w(TAG, "KEYCODE_VOLUME_DOWN");
+			return true;
+		case KeyEvent.KEYCODE_VOLUME_UP:
+			Log.w(TAG, "KEYCODE_VOLUME_UP");
+			return true;
+		case KeyEvent.KEYCODE_STAR:
+			Log.w(TAG, "KEYCODE_STAR");
+			return true;
+		}
+		Log.w(TAG, "return super.onKeyDown(keyCode, event);");
+		return super.onKeyDown(keyCode, event);
 	}
 }

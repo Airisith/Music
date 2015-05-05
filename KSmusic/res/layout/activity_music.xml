@@ -79,88 +79,98 @@
     </RelativeLayout>
 
     <!-- buttom -->
+
     <RelativeLayout
         android:id="@+id/music_buttomLayout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#00000000"
-        android:layout_alignParentBottom="true" >
-        <TextView 
+        android:layout_alignParentBottom="true"
+        android:background="#00000000" >
+
+        <TextView
             android:id="@+id/music_timeText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
             android:gravity="center_horizontal"
-            />
+            android:textColor="#FFFFFF"
+            android:textSize="10sp" />
+
         <SeekBar
             android:id="@+id/music_progressbar"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:minHeight="2dp"
-            android:maxHeight="2dp"
             android:layout_below="@id/music_timeText"
             android:max="200"
-        	android:progress="0"
-        	android:progressDrawable="@drawable/bg_bar"  
-        	android:thumb="@drawable/thumb_bar"
-        	 />  
+            android:maxHeight="2dp"
+            android:minHeight="2dp"
+            android:padding="5dp"
+            android:progress="0"
+            android:progressDrawable="@drawable/bg_bar"
+            android:thumb="@drawable/thumb_bar" />
+
         <LinearLayout
             android:id="@+id/music_buttomMenuLayout"
-            android:layout_height="wrap_content"
             android:layout_width="fill_parent"
-            android:padding="5dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/music_progressbar"
             android:background="#00000000"
             android:orientation="horizontal"
-            android:layout_below="@id/music_progressbar"
-            >
-            <ImageView 
+            android:padding="5dp" >
+
+            <ImageView
                 android:id="@+id/music_order"
-                android:layout_weight="1"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:scaleType="centerInside"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/order"
-                />
-            <ImageView 
+                android:layout_weight="1"
+                android:scaleType="centerInside"
+                android:src="@drawable/order" />
+
+            <ImageView
                 android:id="@+id/music_last"
-                android:layout_weight="1"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:scaleType="centerInside"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/last"
-                />
-            <ImageView 
+                android:layout_weight="1"
+                android:scaleType="centerInside"
+                android:src="@drawable/last" />
+
+            <ImageView
                 android:id="@+id/music_play"
-                android:layout_weight="1"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:scaleType="centerInside"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/play"
-                />
-            <ImageView 
+                android:layout_weight="1"
+                android:scaleType="centerInside"
+                android:src="@drawable/play" />
+
+            <ImageView
                 android:id="@+id/music_next"
-                android:layout_weight="1"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:scaleType="centerInside"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/next"
-                />
-            <ImageView 
+                android:layout_weight="1"
+                android:scaleType="centerInside"
+                android:src="@drawable/next" />
+
+            <ImageView
                 android:id="@+id/music_list"
-                android:layout_weight="1"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:scaleType="centerInside"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/list"
-                />
+                android:layout_weight="1"
+                android:scaleType="centerInside"
+                android:src="@drawable/list" />
         </LinearLayout>
     </RelativeLayout>
+    <!-- 歌词显示的view -->
+
+    <com.airisith.lyric.LrcView
+        android:id="@+id/music_lrcShowView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_above="@id/music_buttomLayout"
+        android:layout_below="@id/musicView_topLayout"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
