@@ -7,19 +7,29 @@ import java.util.Timer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -524,6 +534,7 @@ public class MusicView extends Activity {
 	/**
 	 * 点击列表图标弹出的音乐列表
 	 */
+	@SuppressWarnings("deprecation")
 	public void musicListItemDialog() {
 
 		int size = currentMusicList.size();
@@ -532,23 +543,61 @@ public class MusicView extends Activity {
 			String musicTitle = currentMusicList.get(position).getAbbrTitle();
 			musics[position] = musicTitle;
 		}
-		OnMusiclistItemClickedListener listener = new OnMusiclistItemClickedListener();
-		new AlertDialog.Builder(this).setItems(
-				musics, listener).show();
-	}
-	
-	/**
-	 * 弹出音乐列表项点击事件
-	 * @author Administrator
-	 *
-	 */
-	private class OnMusiclistItemClickedListener implements DialogInterface.OnClickListener{
 
+		// 使用自定义的对话框
+		Builder builder = new AlertDialog.Builder(this);
+		LayoutInflater inflater = (LayoutInflater) MusicView.this
+				.getSystemService(LAYOUT_INFLATER_SERVICE);
+		View layout = inflater.inflate(R.layout.music_musiclist,
+				(ViewGroup) findViewById(R.id.music_listLayout));
+		builder.setView(layout);
+
+		// 创建对话框并设置其属性
+		AlertDialog dialog = builder.create();
+		Window window = dialog.getWindow();
+		window.setGravity(Gravity.RIGHT|Gravity.BOTTOM);
+		WindowManager.LayoutParams lp = window.getAttributes();
+		
+		WindowManager m = getWindowManager();
+		Display d = m.getDefaultDisplay(); // 获取屏幕宽、高用,结果不起作用
+		lp.width = (int) (d.getHeight() * 0.5);
+		lp.height = (int) (d.getWidth() * 0.5);
+		window.setAttributes(lp);
+		dialog.setCanceledOnTouchOutside(true);
+		dialog.setCancelable(true);
+		
+		// 播放歌曲并让对话框消失
+		ListView musicListView = (ListView) layout
+				.findViewById(R.id.musc_musiclistview);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+				getApplicationContext(), R.layout.music_musiclist_item, musics);
+		musicListView.setAdapter(adapter);
+		musicListView
+		.setOnItemClickListener(new OnMusiclistItemClickedListener(dialog));
+		
+		dialog.show();
+	}
+
+	/**
+	 * 列表点击事件
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	private class OnMusiclistItemClickedListener implements OnItemClickListener {
+		private AlertDialog dialog;
+		public OnMusiclistItemClickedListener(AlertDialog dialog){
+			this.dialog = dialog;
+		}
 		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			musicPosition = which;
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position,
+				long id) {
+			musicPosition = position;
+			playState = Constans.STATE_PLAY;
 			MusicCommad(currentMusicList, Constans.PLAY_CMD, musicPosition, 0,
 					true);
+			dialog.dismiss();
 		}
 	}
+
 }

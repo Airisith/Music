@@ -48,10 +48,10 @@ public final class R {
     }
     public static final class id {
         public static final int SecondaryProgress=0x01010000;
-        public static final int action_settings=0x7f090029;
+        public static final int action_settings=0x7f09002c;
         public static final int home_ExpandingListView=0x7f090005;
         public static final int home_buttomLayout=0x7f090003;
-        public static final int home_groups=0x7f090024;
+        public static final int home_groups=0x7f090027;
         public static final int home_menuLable=0x7f090002;
         public static final int home_tabFirst=0x7f090004;
         public static final int home_tabSecond=0x7f090006;
@@ -65,10 +65,11 @@ public final class R {
         public static final int homeb_play=0x7f090021;
         public static final int homeb_time=0x7f09001e;
         public static final int homeb_title=0x7f09001d;
-        public static final int localListArtist=0x7f090027;
-        public static final int localListItem=0x7f090025;
-        public static final int localListTime=0x7f090028;
-        public static final int localListTitel=0x7f090026;
+        public static final int localListArtist=0x7f09002a;
+        public static final int localListItem=0x7f090028;
+        public static final int localListTime=0x7f09002b;
+        public static final int localListTitel=0x7f090029;
+        public static final int musc_musiclistview=0x7f090025;
         public static final int musicTop_artist=0x7f09000a;
         public static final int musicTop_backLayout=0x7f090008;
         public static final int musicTop_backText=0x7f090009;
@@ -80,6 +81,8 @@ public final class R {
         public static final int music_last=0x7f090013;
         public static final int music_like=0x7f09000d;
         public static final int music_list=0x7f090016;
+        public static final int music_listLayout=0x7f090024;
+        public static final int music_list_item=0x7f090026;
         public static final int music_lrcShowView=0x7f090018;
         public static final int music_menu=0x7f09000c;
         public static final int music_next=0x7f090015;
@@ -96,8 +99,10 @@ public final class R {
         public static final int activity_music=0x7f030001;
         public static final int activity_start=0x7f030002;
         public static final int homeb_layout=0x7f030003;
-        public static final int musiclist_group=0x7f030004;
-        public static final int musiclist_item=0x7f030005;
+        public static final int music_musiclist=0x7f030004;
+        public static final int music_musiclist_item=0x7f030005;
+        public static final int musiclist_group=0x7f030006;
+        public static final int musiclist_item=0x7f030007;
     }
     public static final class menu {
         public static final int main=0x7f080000;
