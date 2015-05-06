@@ -8,6 +8,9 @@
 package com.airisith.ksmusic;
 
 public final class R {
+    public static final class anim {
+        public static final int anim=0x7f040000;
+    }
     public static final class attr {
     }
     public static final class dimen {
@@ -17,74 +20,76 @@ public final class R {
          screen margins) for sw720dp devices (e.g. 10" tablets) in landscape here.
     
          */
-        public static final int activity_horizontal_margin=0x7f040000;
-        public static final int activity_vertical_margin=0x7f040001;
+        public static final int activity_horizontal_margin=0x7f050000;
+        public static final int activity_vertical_margin=0x7f050001;
     }
     public static final class drawable {
-        public static final int back_to=0x7f020000;
-        public static final int bar_dn=0x7f020001;
-        public static final int bar_up=0x7f020002;
-        public static final int bg_bar=0x7f020003;
-        public static final int dftcap=0x7f020004;
-        public static final int home_back=0x7f020005;
-        public static final int ic_launcher=0x7f020006;
-        public static final int last=0x7f020007;
-        public static final int list=0x7f020008;
-        public static final int music_back=0x7f020009;
-        public static final int next=0x7f02000a;
-        public static final int order=0x7f02000b;
-        public static final int play=0x7f02000c;
-        public static final int puase=0x7f02000d;
-        public static final int random=0x7f02000e;
-        public static final int single=0x7f02000f;
-        public static final int start_back=0x7f020010;
-        public static final int thumb_bar=0x7f020011;
-        public static final int thumb_dn=0x7f020012;
-        public static final int thumb_up=0x7f020013;
+        public static final int album_back=0x7f020000;
+        public static final int back_to=0x7f020001;
+        public static final int bar_dn=0x7f020002;
+        public static final int bar_up=0x7f020003;
+        public static final int bg_bar=0x7f020004;
+        public static final int dftcap=0x7f020005;
+        public static final int home_back=0x7f020006;
+        public static final int ic_launcher=0x7f020007;
+        public static final int last=0x7f020008;
+        public static final int list=0x7f020009;
+        public static final int music_back=0x7f02000a;
+        public static final int next=0x7f02000b;
+        public static final int order=0x7f02000c;
+        public static final int play=0x7f02000d;
+        public static final int puase=0x7f02000e;
+        public static final int random=0x7f02000f;
+        public static final int single=0x7f020010;
+        public static final int start_back=0x7f020011;
+        public static final int thumb_bar=0x7f020012;
+        public static final int thumb_dn=0x7f020013;
+        public static final int thumb_up=0x7f020014;
     }
     public static final class id {
         public static final int SecondaryProgress=0x01010000;
-        public static final int action_settings=0x7f080028;
-        public static final int home_ExpandingListView=0x7f080005;
-        public static final int home_buttomLayout=0x7f080003;
-        public static final int home_groups=0x7f080023;
-        public static final int home_menuLable=0x7f080002;
-        public static final int home_tabFirst=0x7f080004;
-        public static final int home_tabSecond=0x7f080006;
-        public static final int home_tablayout=0x7f080001;
-        public static final int homeb_artist=0x7f08001e;
-        public static final int homeb_cap=0x7f08001b;
-        public static final int homeb_infoLayout=0x7f08001a;
-        public static final int homeb_menulayout=0x7f08001f;
-        public static final int homeb_next=0x7f080021;
-        public static final int homeb_order=0x7f080022;
-        public static final int homeb_play=0x7f080020;
-        public static final int homeb_time=0x7f08001d;
-        public static final int homeb_title=0x7f08001c;
-        public static final int localListArtist=0x7f080026;
-        public static final int localListItem=0x7f080024;
-        public static final int localListTime=0x7f080027;
-        public static final int localListTitel=0x7f080025;
-        public static final int musicTop_artist=0x7f08000a;
-        public static final int musicTop_backLayout=0x7f080008;
-        public static final int musicTop_backText=0x7f080009;
-        public static final int musicTop_title=0x7f08000b;
-        public static final int musicView_topLayout=0x7f080007;
-        public static final int music_buttomLayout=0x7f08000e;
-        public static final int music_buttomMenuLayout=0x7f080011;
-        public static final int music_last=0x7f080013;
-        public static final int music_like=0x7f08000d;
-        public static final int music_list=0x7f080016;
-        public static final int music_lrcShowView=0x7f080017;
-        public static final int music_menu=0x7f08000c;
-        public static final int music_next=0x7f080015;
-        public static final int music_order=0x7f080012;
-        public static final int music_play=0x7f080014;
-        public static final int music_progressbar=0x7f080010;
-        public static final int music_timeText=0x7f08000f;
-        public static final int start_versionText=0x7f080019;
-        public static final int start_welcomText=0x7f080018;
-        public static final int tabhost=0x7f080000;
+        public static final int action_settings=0x7f090029;
+        public static final int home_ExpandingListView=0x7f090005;
+        public static final int home_buttomLayout=0x7f090003;
+        public static final int home_groups=0x7f090024;
+        public static final int home_menuLable=0x7f090002;
+        public static final int home_tabFirst=0x7f090004;
+        public static final int home_tabSecond=0x7f090006;
+        public static final int home_tablayout=0x7f090001;
+        public static final int homeb_artist=0x7f09001f;
+        public static final int homeb_cap=0x7f09001c;
+        public static final int homeb_infoLayout=0x7f09001b;
+        public static final int homeb_menulayout=0x7f090020;
+        public static final int homeb_next=0x7f090022;
+        public static final int homeb_order=0x7f090023;
+        public static final int homeb_play=0x7f090021;
+        public static final int homeb_time=0x7f09001e;
+        public static final int homeb_title=0x7f09001d;
+        public static final int localListArtist=0x7f090027;
+        public static final int localListItem=0x7f090025;
+        public static final int localListTime=0x7f090028;
+        public static final int localListTitel=0x7f090026;
+        public static final int musicTop_artist=0x7f09000a;
+        public static final int musicTop_backLayout=0x7f090008;
+        public static final int musicTop_backText=0x7f090009;
+        public static final int musicTop_title=0x7f09000b;
+        public static final int musicView_topLayout=0x7f090007;
+        public static final int music_ablum=0x7f090017;
+        public static final int music_buttomLayout=0x7f09000e;
+        public static final int music_buttomMenuLayout=0x7f090011;
+        public static final int music_last=0x7f090013;
+        public static final int music_like=0x7f09000d;
+        public static final int music_list=0x7f090016;
+        public static final int music_lrcShowView=0x7f090018;
+        public static final int music_menu=0x7f09000c;
+        public static final int music_next=0x7f090015;
+        public static final int music_order=0x7f090012;
+        public static final int music_play=0x7f090014;
+        public static final int music_progressbar=0x7f090010;
+        public static final int music_timeText=0x7f09000f;
+        public static final int start_versionText=0x7f09001a;
+        public static final int start_welcomText=0x7f090019;
+        public static final int tabhost=0x7f090000;
     }
     public static final class layout {
         public static final int activity_home=0x7f030000;
@@ -95,12 +100,12 @@ public final class R {
         public static final int musiclist_item=0x7f030005;
     }
     public static final class menu {
-        public static final int main=0x7f070000;
+        public static final int main=0x7f080000;
     }
     public static final class string {
-        public static final int action_settings=0x7f050001;
-        public static final int app_name=0x7f050000;
-        public static final int hello_world=0x7f050002;
+        public static final int action_settings=0x7f060001;
+        public static final int app_name=0x7f060000;
+        public static final int hello_world=0x7f060002;
     }
     public static final class style {
         /** 
@@ -124,10 +129,10 @@ public final class R {
     
  API 14 theme customizations can go here. 
          */
-        public static final int AppBaseTheme=0x7f060000;
+        public static final int AppBaseTheme=0x7f070000;
         /**  Application theme. 
  All customizations that are NOT specific to a particular API-level can go here. 
          */
-        public static final int AppTheme=0x7f060001;
+        public static final int AppTheme=0x7f070001;
     }
 }

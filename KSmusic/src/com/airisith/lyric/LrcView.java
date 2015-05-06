@@ -101,7 +101,7 @@ public class LrcView extends android.widget.TextView {
 						notCurrentPaint);
 			}
 		} catch (Exception e) {
-			setText("...木有歌词文件，赶紧去下载...");
+			setText("无歌词文件");
 		}
 	}
 

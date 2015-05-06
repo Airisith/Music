@@ -1,5 +1,6 @@
 package com.airisith.lyric;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +42,7 @@ public class LrcProcess {
 		try {
 			// 创建一个文件输入流对象
 			FileInputStream fis = new FileInputStream(f);
-			InputStreamReader isr = new InputStreamReader(fis, "utf-8");
+			InputStreamReader isr = new InputStreamReader(fis, codeString(f));
 			BufferedReader br = new BufferedReader(isr);
 			String s = "";
 			while ((s = br.readLine()) != null) {
@@ -68,10 +69,12 @@ public class LrcProcess {
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			stringBuilder.append("木有歌词文件，赶紧去下载！...");
+			stringBuilder.append("无歌词文件");
 		} catch (IOException e) {
 			e.printStackTrace();
-			stringBuilder.append("木有读取到歌词哦！");
+			stringBuilder.append("读取歌词失败");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return stringBuilder.toString();
 	}
@@ -100,5 +103,33 @@ public class LrcProcess {
 
 	public List<LrcContent> getLrcList() {
 		return lrcList;
+	}
+	
+	/**
+	 * 解析之前判断其编码方式，以免出现乱码
+	 * @param file
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("resource")
+	public static String codeString(File file) throws Exception {
+		BufferedInputStream bin = new BufferedInputStream(new FileInputStream(
+				file));
+		int p = (bin.read() << 8) + bin.read();
+		String code = null;
+		switch (p) {
+		case 0xefbb:
+			code = "UTF-8";
+			break;
+		case 0xfffe:
+			code = "Unicode";
+			break;
+		case 0xfeff:
+			code = "UTF-16BE";
+			break;
+		default:
+			code = "GBK";
+		}
+		return code;
 	}
 }

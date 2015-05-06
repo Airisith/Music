@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
-import com.airisith.lyric.LrcView;
-import com.airisith.modle.MusicInfo;
-import com.airisith.util.Constans;
-import com.airisith.util.MusicList;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -28,7 +25,12 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-public class MusicView extends Activity{
+import com.airisith.lyric.LrcView;
+import com.airisith.modle.MusicInfo;
+import com.airisith.util.Constans;
+import com.airisith.util.MusicList;
+
+public class MusicView extends Activity {
 	private final String TAG = "MusicView";
 
 	private int musicPosition = 0;
@@ -37,14 +39,14 @@ public class MusicView extends Activity{
 	private List<MusicInfo> localMusicLists = null;
 	private List<MusicInfo> currentMusicList = null;
 	private List<MusicInfo> downloadMusicLists = null;
-	
+
 	private Intent musicIntent = null;
 	private MusicInfo currentMusicInfo = null;
 	private boolean turnTOback = false;
 	private Handler timeHandler; // 实时更新歌曲时间
 	private Timer timer;
 	private MusicCompleteReceiver receiver;// 循环播放广播接收器
-	
+
 	private RelativeLayout topBackLayout;
 	private TextView likeTextView;
 	private TextView menuTextView;
@@ -57,9 +59,11 @@ public class MusicView extends Activity{
 	private ImageView nextImageView;
 	private ImageView listImageView;
 	private SeekBar seekBar;
-	
+
 	// 歌词控件
 	public static LrcView lrcView;
+	private ImageView albumView;
+	private Boolean lrcAndAlbum = false;
 
 	private int currentListId = 0;
 
@@ -68,27 +72,28 @@ public class MusicView extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_music);
 		topBackLayout = (RelativeLayout) findViewById(R.id.musicTop_backLayout);
-		likeTextView = (TextView)findViewById(R.id.music_like);
-		menuTextView = (TextView)findViewById(R.id.music_menu);
-		titelTextView = (TextView)findViewById(R.id.musicTop_title);
-		artisTextView = (TextView)findViewById(R.id.musicTop_artist);
-		timeTextView = (TextView)findViewById(R.id.music_timeText);
-		orderImageView = (ImageView)findViewById(R.id.music_order);
-		lastImageView = (ImageView)findViewById(R.id.music_last);
-		playImageView = (ImageView)findViewById(R.id.music_play);
-		nextImageView = (ImageView)findViewById(R.id.music_next);
-		listImageView = (ImageView)findViewById(R.id.music_list);
-		seekBar = (SeekBar)findViewById(R.id.music_progressbar);
-		lrcView = (LrcView)findViewById(R.id.music_lrcShowView);
-		
+		likeTextView = (TextView) findViewById(R.id.music_like);
+		menuTextView = (TextView) findViewById(R.id.music_menu);
+		titelTextView = (TextView) findViewById(R.id.musicTop_title);
+		artisTextView = (TextView) findViewById(R.id.musicTop_artist);
+		timeTextView = (TextView) findViewById(R.id.music_timeText);
+		orderImageView = (ImageView) findViewById(R.id.music_order);
+		lastImageView = (ImageView) findViewById(R.id.music_last);
+		playImageView = (ImageView) findViewById(R.id.music_play);
+		nextImageView = (ImageView) findViewById(R.id.music_next);
+		listImageView = (ImageView) findViewById(R.id.music_list);
+		seekBar = (SeekBar) findViewById(R.id.music_progressbar);
+		lrcView = (LrcView) findViewById(R.id.music_lrcShowView);
+		albumView = (ImageView) findViewById(R.id.music_ablum);
+
 		musicIntent = new Intent(getApplicationContext(), MusicService.class);
 		musicIntent.putExtra("Activity", "MusicView");
 		try {
-			playState = getIntent().getIntExtra("SERVICE_STATE", Constans.STATE_STOP);
+			playState = getIntent().getIntExtra("SERVICE_STATE",
+					Constans.STATE_STOP);
 		} catch (Exception e) {
 		}
-		
-		
+
 		// 获取音乐列表
 		localMusicLists = MusicList.getMusicInfos(getApplicationContext());
 		downloadMusicLists = new ArrayList<MusicInfo>();
@@ -97,13 +102,13 @@ public class MusicView extends Activity{
 		} else {
 			currentMusicList = downloadMusicLists;
 		}
-		
+
 		// 广播接收器，用于一首歌播放完成后继续播放下一首的动作
 		receiver = new MusicCompleteReceiver();
 		IntentFilter intentfFilter = new IntentFilter();
 		intentfFilter.addAction(Constans.MUSIC_END_ACTION_MUSIC);
 		MusicView.this.registerReceiver(receiver, intentfFilter);
-		
+
 		// 各个View设置监听器
 		topBackLayout.setOnClickListener(new OnbuttomItemClickeListener());
 		likeTextView.setOnClickListener(new OnbuttomItemClickeListener());
@@ -115,6 +120,10 @@ public class MusicView extends Activity{
 		listImageView.setOnClickListener(new OnbuttomItemClickeListener());
 		// 进度条拖拽
 		seekBar.setOnSeekBarChangeListener(new OnProgressChagedListener());
+		// 歌词和图片的显示
+		lrcView.setOnClickListener(new OnLrcOrAlbumClickedListerner());
+		albumView.setOnClickListener(new OnLrcOrAlbumClickedListerner());
+
 	}
 
 	@Override
@@ -142,9 +151,17 @@ public class MusicView extends Activity{
 		Log.w(TAG, "onStart");
 		super.onStart();
 		turnTOback = false;
+		// 通知service，页面发生改变
 		musicIntent.putExtra("Activity", "MusicView");
 		try {
-			int[] state = MusicInfo.getCurrentMusicInfo(getApplicationContext());
+			musicIntent.putExtra("CMD", Constans.ACTIVITY_CHANGED_CMD);
+			startService(musicIntent);
+		} catch (Exception e) {
+		}
+
+		try {
+			int[] state = MusicInfo
+					.getCurrentMusicInfo(getApplicationContext());
 			currentListId = state[0];
 			playMode = state[1];
 			musicPosition = state[2];
@@ -181,18 +198,18 @@ public class MusicView extends Activity{
 			artisTextView.setText(currentMusicInfo.getArtist());
 			if (Constans.STATE_STOP == playState) {
 				playImageView.setImageResource(R.drawable.play);
-				timeTextView.setText("00:00/"+currentMusicInfo.getDurationStr());
-			}else if (Constans.STATE_PUASE == playState) {
+				timeTextView.setText("00:00/"
+						+ currentMusicInfo.getDurationStr());
+			} else if (Constans.STATE_PUASE == playState) {
 				playImageView.setImageResource(R.drawable.play);
 				MusicService.updataTime(timeHandler, timer, true);
-			}
-			else {
+			} else {
 				MusicService.updataTime(timeHandler, timer, true);
 				playImageView.setImageResource(R.drawable.puase);
-				//bcap.setImageBitmap(currentMusicInfo.getAlbum_bitmap());
+				// bcap.setImageBitmap(currentMusicInfo.getAlbum_bitmap());
 				titelTextView.setText(currentMusicInfo.getAbbrTitle());
 				artisTextView.setText(currentMusicInfo.getAbbrArtist());
-			} 
+			}
 
 		} catch (Exception e) {
 		}
@@ -214,17 +231,17 @@ public class MusicView extends Activity{
 		}
 		super.onStop();
 	}
-	
-//	/**
-//	 * 返回键设置
-//	 */
-//	@Override
-//    public void onBackPressed() { 
-//        Log.w(TAG, "onBackPressed") ;
-//        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-//		intent.putExtra("SERVICE_STATE", playState);
-//		startActivity(intent);
-//    } 
+
+	// /**
+	// * 返回键设置
+	// */
+	// @Override
+	// public void onBackPressed() {
+	// Log.w(TAG, "onBackPressed") ;
+	// Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+	// intent.putExtra("SERVICE_STATE", playState);
+	// startActivity(intent);
+	// }
 	/**
 	 * 歌曲命令
 	 * 
@@ -241,12 +258,12 @@ public class MusicView extends Activity{
 	 */
 	private void MusicCommad(List<MusicInfo> musicInfos, int playCommand,
 			int position, int rate, Boolean upTime) {
-		if ((musicInfos != null)&&(Constans.ACTIVITY_CHANGED_CMD != playCommand)) {
+		if ((musicInfos != null)
+				&& (Constans.ACTIVITY_CHANGED_CMD != playCommand)) {
 			MusicInfo musicInfo = musicInfos.get(position);
-			currentMusicInfo  = musicInfo;
+			currentMusicInfo = musicInfo;
 			Log.w(TAG, "开始播放第" + position + "首歌");
 			Log.w(TAG, musicInfo.getUrl().toString());
-			// Intent intent = new Intent();
 			musicIntent.putExtra("url", musicInfo.getUrl());
 			musicIntent.putExtra("CMD", playCommand);
 			musicIntent.putExtra("rate", rate);
@@ -254,18 +271,18 @@ public class MusicView extends Activity{
 			titelTextView.setText(musicInfo.getAbbrTitle());
 			artisTextView.setText(musicInfo.getArtist());
 			playImageView.setImageResource(R.drawable.puase);
-			//bcap.setImageBitmap(musicInfo.getAlbum_bitmap());
-			if (false == turnTOback ) {
+			upDataAlbum(lrcAndAlbum);
+			if (false == turnTOback) {
 				MusicService.updataTime(timeHandler, timer, upTime);
 			}
-				
+
 			MusicInfo.putCurrentMusicInfo(getApplicationContext(),
-					currentListId , playMode, musicPosition);
+					currentListId, playMode, musicPosition);
 			Log.w(TAG, "保存歌曲信息：list,mode,position:" + currentListId + playMode
 					+ musicPosition);
 		}
 	}
-	
+
 	/**
 	 * 音乐播放结束广播接收器，继续播放
 	 * 
@@ -277,7 +294,7 @@ public class MusicView extends Activity{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (Constans.MODLE_ORDER == playMode) {
-				if (musicPosition<currentMusicList.size()-1) {
+				if (musicPosition < currentMusicList.size() - 1) {
 					musicPosition = musicPosition + 1;
 				} else {
 					musicPosition = 0;
@@ -292,7 +309,7 @@ public class MusicView extends Activity{
 					true);
 		}
 	}
-	
+
 	/**
 	 * 接收service发送的消息，实时更新时间
 	 * 
@@ -307,20 +324,21 @@ public class MusicView extends Activity{
 			try {
 				String[] time = (String[]) msg.obj;
 				int progress = msg.what;
-				timeTextView.setText(time[0]+"/"+time[1]);
+				timeTextView.setText(time[0] + "/" + time[1]);
 				seekBar.setProgress(progress);
 			} catch (Exception e) {
 			}
 		}
 
 	}
-	
+
 	/**
 	 * 按钮监听器
+	 * 
 	 * @author Administrator
-	 *
+	 * 
 	 */
-	private class OnbuttomItemClickeListener implements OnClickListener{
+	private class OnbuttomItemClickeListener implements OnClickListener {
 
 		@Override
 		public void onClick(View v) {
@@ -329,18 +347,14 @@ public class MusicView extends Activity{
 				Intent intent = new Intent(getApplicationContext(),
 						HomeActivity.class);
 				intent.putExtra("SERVICE_STATE", playState);
-				// activity发生改变，将消息传给Service
-				musicIntent.putExtra("Activity", Constans.ACTIVITY_HOME);
-				MusicCommad(currentMusicList, Constans.ACTIVITY_CHANGED_CMD, musicPosition, 0,
-						true); // 通知serviceActivity发生改变
-				unregisterReceiver(receiver); //停止接收广播，转由HomeActivity接收
+				unregisterReceiver(receiver); // 停止接收广播，转由HomeActivity接收
 				startActivity(intent);
 				break;
 			case R.id.music_like:
-				
+
 				break;
 			case R.id.music_menu:
-				
+
 				break;
 			case R.id.music_order:
 				if (Constans.MODLE_ORDER == playMode) {
@@ -359,10 +373,10 @@ public class MusicView extends Activity{
 					musicPosition = (int) (Math.random() * currentMusicList
 							.size());
 				} else {
-					if (musicPosition>0) {
+					if (musicPosition > 0) {
 						musicPosition = musicPosition - 1;
 					} else {
-						musicPosition = currentMusicList.size()-1;
+						musicPosition = currentMusicList.size() - 1;
 					}
 				}
 				playState = Constans.STATE_PLAY;
@@ -387,13 +401,13 @@ public class MusicView extends Activity{
 					playState = Constans.STATE_PLAY;
 				}
 				break;
-				
+
 			case R.id.music_next:
 				if (Constans.MODLE_RANDOM == playMode) {
 					musicPosition = (int) (Math.random() * currentMusicList
 							.size());
 				} else {
-					if (musicPosition<currentMusicList.size()-1) {
+					if (musicPosition < currentMusicList.size() - 1) {
 						musicPosition = musicPosition + 1;
 					} else {
 						musicPosition = 0;
@@ -404,28 +418,30 @@ public class MusicView extends Activity{
 						0, true);
 				break;
 			case R.id.music_list:
-				
+				musicListItemDialog();
 				break;
 			default:
 				break;
 			}
 		}
 	}
-	
+
 	/**
 	 * 进度条拖拽事件
+	 * 
 	 * @author Administrator
-	 *
+	 * 
 	 */
-	private class OnProgressChagedListener implements OnSeekBarChangeListener{
+	private class OnProgressChagedListener implements OnSeekBarChangeListener {
 
-		private float progressRate ; //之前设置最大为200
+		private float progressRate; // 之前设置最大为200
+
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress,
 				boolean fromUser) {
 			if (fromUser) {
-				this.progressRate = (float)progress/200;
-				Log.w(TAG, "进度："+progressRate);
+				this.progressRate = (float) progress / 200;
+				Log.w(TAG, "进度：" + progressRate);
 			}
 		}
 
@@ -435,53 +451,104 @@ public class MusicView extends Activity{
 
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
-			int rate = (int)(progressRate*100);
+			int rate = (int) (progressRate * 100);
 			MusicCommad(currentMusicList, Constans.PLAY_CMD, musicPosition,
 					rate, true);
 		}
-		
+
 	}
-	
+
 	/**
 	 * 屏蔽返回键原来的功能，以免程序异常退出出错
 	 */
 	@Override
-	public boolean onKeyDown(int keyCode,KeyEvent event)
-	{
-		switch(keyCode)
-		{
-			case KeyEvent.KEYCODE_HOME:
-				Log.w(TAG, "KEYCODE_HOME");
-				return true;
-			case KeyEvent.KEYCODE_BACK:
-				Log.w(TAG, "KEYCODE_BACK");
-				Intent intent = new Intent(getApplicationContext(),
-						HomeActivity.class);
-				intent.putExtra("SERVICE_STATE", playState);
-				// activity发生改变，将消息传给Service
-				musicIntent.putExtra("Activity", Constans.ACTIVITY_HOME);
-				MusicCommad(currentMusicList, Constans.ACTIVITY_CHANGED_CMD, musicPosition, 0,
-						true); // 通知serviceActivity发生改变
-				unregisterReceiver(receiver); //停止接收广播，转由HomeActivity接收
-				startActivity(intent);
-				return true;
-			case KeyEvent.KEYCODE_CALL:
-				Log.w(TAG, "KEYCODE_CALL");
-				return true;
-			case KeyEvent.KEYCODE_SYM: 
-				Log.w(TAG, "KEYCODE_SYM");
-				return true;
-			case KeyEvent.KEYCODE_VOLUME_DOWN: 
-				Log.w(TAG, "KEYCODE_VOLUME_DOWN");
-				return true;
-			case KeyEvent.KEYCODE_VOLUME_UP: 
-				Log.w(TAG, "KEYCODE_VOLUME_UP");
-				return true;
-			case KeyEvent.KEYCODE_STAR: 
-				Log.w(TAG, "KEYCODE_STAR");
-				return true;
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_HOME:
+			Log.w(TAG, "KEYCODE_HOME");
+			return true;
+		case KeyEvent.KEYCODE_BACK:
+			Log.w(TAG, "KEYCODE_BACK");
+			Intent intent = new Intent(getApplicationContext(),
+					HomeActivity.class);
+			intent.putExtra("SERVICE_STATE", playState);
+			unregisterReceiver(receiver); // 停止接收广播，转由HomeActivity接收
+			startActivity(intent);
+			return true;
+		case KeyEvent.KEYCODE_CALL:
+			Log.w(TAG, "KEYCODE_CALL");
+			return true;
+		case KeyEvent.KEYCODE_SYM:
+			Log.w(TAG, "KEYCODE_SYM");
+			return true;
+		case KeyEvent.KEYCODE_STAR:
+			Log.w(TAG, "KEYCODE_STAR");
+			return true;
 		}
 		Log.w(TAG, "return super.onKeyDown(keyCode, event);");
 		return super.onKeyDown(keyCode, event);
+	}
+
+	/**
+	 * 点击歌词切换图片
+	 */
+	private class OnLrcOrAlbumClickedListerner implements OnClickListener {
+
+		@Override
+		public void onClick(View v) {
+
+			if (lrcAndAlbum) {
+				lrcAndAlbum = false;
+			} else {
+				lrcAndAlbum = true;
+			}
+			upDataAlbum(lrcAndAlbum);
+		}
+	}
+
+	/**
+	 * 切换lrc界面，在有图片和无图片之间切换
+	 * 
+	 * @param visible
+	 */
+	private void upDataAlbum(Boolean visible) {
+		if (visible) {
+			albumView.setImageBitmap(currentMusicInfo.getAlbum_bitmap());
+			albumView.setBackgroundResource(R.drawable.album_back);
+		} else {
+			albumView.setImageBitmap(null);
+			albumView.setBackgroundResource(0);
+		}
+	}
+
+	/**
+	 * 点击列表图标弹出的音乐列表
+	 */
+	public void musicListItemDialog() {
+
+		int size = currentMusicList.size();
+		String[] musics = new String[size];
+		for (int position = 0; position < size; position++) {
+			String musicTitle = currentMusicList.get(position).getAbbrTitle();
+			musics[position] = musicTitle;
+		}
+		OnMusiclistItemClickedListener listener = new OnMusiclistItemClickedListener();
+		new AlertDialog.Builder(this).setItems(
+				musics, listener).show();
+	}
+	
+	/**
+	 * 弹出音乐列表项点击事件
+	 * @author Administrator
+	 *
+	 */
+	private class OnMusiclistItemClickedListener implements DialogInterface.OnClickListener{
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			musicPosition = which;
+			MusicCommad(currentMusicList, Constans.PLAY_CMD, musicPosition, 0,
+					true);
+		}
 	}
 }

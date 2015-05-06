@@ -197,7 +197,13 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		Log.w(TAG, "onStart");
 		super.onStart();
 		turnTOback = false;
+		// 通知service，页面发生改变
 		musicIntent.putExtra("Activity", Constans.ACTIVITY_HOME);
+		try {
+			musicIntent.putExtra("CMD", Constans.ACTIVITY_CHANGED_CMD);
+			startService(musicIntent);
+		} catch (Exception e) {
+		}
 		try {
 			// 获取歌曲播放信息
 			int[] state = MusicInfo
@@ -365,7 +371,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			musicIntent.putExtra("url", musicInfo.getUrl());
 			musicIntent.putExtra("CMD", playCommand);
 			musicIntent.putExtra("rate", rate);
-			startService(musicIntent); // 启动服务
+			startService(musicIntent); //启动服务
 			bTitle.setText(musicInfo.getAbbrTitle());
 			bArtis.setText(musicInfo.getArtist());
 			bPlay.setImageResource(R.drawable.puase);
@@ -378,7 +384,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 					currentListId, playMode, musicPosition);
 			Log.w(TAG, "保存歌曲信息：list,mode,position:" + currentListId + playMode
 					+ musicPosition);
-		}
+		} 
 	}
 
 	/**
@@ -457,10 +463,6 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 				Intent intent = new Intent(getApplicationContext(),
 						MusicView.class);
 				intent.putExtra("SERVICE_STATE", playState);
-				// activity发生改变，将消息传给Service
-				musicIntent.putExtra("Activity", Constans.ACTIVITY_MUSIC);
-				MusicCommad(currentMusicList, Constans.ACTIVITY_CHANGED_CMD,
-						musicPosition, 0, true); // 通知serviceActivity发生改变
 				startActivity(intent);
 				break;
 			case R.id.homeb_order:
@@ -535,12 +537,6 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			return true;
 		case KeyEvent.KEYCODE_SYM:
 			Log.w(TAG, "KEYCODE_SYM");
-			return true;
-		case KeyEvent.KEYCODE_VOLUME_DOWN:
-			Log.w(TAG, "KEYCODE_VOLUME_DOWN");
-			return true;
-		case KeyEvent.KEYCODE_VOLUME_UP:
-			Log.w(TAG, "KEYCODE_VOLUME_UP");
 			return true;
 		case KeyEvent.KEYCODE_STAR:
 			Log.w(TAG, "KEYCODE_STAR");

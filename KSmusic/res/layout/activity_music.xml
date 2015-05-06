@@ -165,12 +165,30 @@
     </RelativeLayout>
     <!-- 歌词显示的view -->
 
+    <ImageView
+        android:id="@+id/music_ablum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/musicView_topLayout"
+        android:layout_centerHorizontal="true"
+        android:maxHeight="210dp"
+        android:maxWidth="210dp"
+        android:padding="7dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:scaleType="centerInside" />
+
     <com.airisith.lyric.LrcView
         android:id="@+id/music_lrcShowView"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:layout_above="@id/music_buttomLayout"
-        android:layout_below="@id/musicView_topLayout"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@id/music_ablum"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
+        android:layout_centerHorizontal="true"
+        android:maxHeight="200dp" />
 
 </RelativeLayout>

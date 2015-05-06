@@ -18,7 +18,7 @@
         android:gravity="center_horizontal"
         android:layout_centerHorizontal="true"
         android:layout_centerInParent="true"
-        android:text="欢迎使用KS音乐播放器"
+        android:text="音乐是人类灵魂的避难所"
         />
     <TextView
         android:id="@+id/start_versionText"
@@ -29,7 +29,7 @@
         android:gravity="center_horizontal"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:text="version-1.0  版权所有airisith@gmail.com"
+        android:text="version-1.0  版权所有  airisith@gmail.com"
         />
 
 </RelativeLayout>

@@ -1,5 +1,7 @@
 package com.airisith.ksmusic;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,7 +16,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.view.animation.AnimationUtils;
 
+import com.airisith.lyric.LrcContent;
+import com.airisith.lyric.LrcProcess;
 import com.airisith.util.Constans;
 
 @SuppressLint("NewApi")
@@ -25,34 +30,54 @@ public class MusicService extends Service {
 	private String path; // 音乐文件路径
 	@SuppressWarnings("unused")
 	private boolean isPause; // 暂停状态
-	private static String FrontActivity = Constans.ACTIVITY_HOME; //当前activity，用于结束广播发送给哪个Activity
+	private static String frontActivity = Constans.ACTIVITY_HOME; //当前activity，用于结束广播发送给哪个Activity
 
+	private LrcProcess mLrcProcess; //歌词处理  
+	private List<LrcContent> lrcList = new ArrayList<LrcContent>(); //存放歌词列表对象  
+	private int index = 0;          //歌词检索值 
+	private Handler handler; // 传递歌词显示的handler
+	
 	@Override
 	public IBinder onBind(Intent arg0) {
 		return null;
 	}
 
 	@Override
+	public void onCreate() {
+		super.onCreate();
+		handler = new Handler();
+	}
+
+	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		path = intent.getStringExtra("url");
 		int cmd = intent.getIntExtra("CMD",0);
-		int rate = intent.getIntExtra("rate", 0);
-		FrontActivity = intent.getStringExtra("Activity");
-		Log.w(TAG, "CMD:"+cmd+",rate"+rate);
-		if (cmd == Constans.PLAY_CMD) {
-			if (rate >= 0) {
-				play(rate);
-			} else {
-				mediaPlayer.start();
+		frontActivity = intent.getStringExtra("Activity");
+		if (cmd != Constans.ACTIVITY_CHANGED_CMD) {
+			path = intent.getStringExtra("url");
+			int rate = intent.getIntExtra("rate", 0);
+			Log.w(TAG, "CMD:"+cmd+",rate"+rate);
+			if (cmd == Constans.PLAY_CMD) {
+				if (rate >= 0) {
+					play(rate);
+				} else {
+					mediaPlayer.start();
+				}
+			} else if (cmd == Constans.PUASE_CMD) {
+				pause();
+			} else if (cmd == Constans.STOP_CMD) {
+				stop();
 			}
-		} else if (cmd == Constans.PUASE_CMD) {
-			pause();
-		} else if (cmd == Constans.STOP_CMD) {
-			stop();
-		}else {
-			//do nothing,只是为了通知service， Activity改变了
-		}
 			
+		} else {
+			//do nothing,只是为了通知service， Activity改变了
+			Log.w(TAG, "页面切换到："+frontActivity);
+		}
+		if (frontActivity.equals(Constans.ACTIVITY_MUSIC)) {
+			try {
+				initLrc();
+			} catch (Exception e) {
+			}
+		}
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -207,9 +232,9 @@ public class MusicService extends Service {
 		@Override
 		public void onCompletion(MediaPlayer mp) {
 			Intent intent = new Intent();
-			if (Constans.ACTIVITY_HOME == FrontActivity) {
+			if (frontActivity.equals(Constans.ACTIVITY_HOME)) {
 				intent.setAction(Constans.MUSIC_END_ACTION_HOME);
-			} else if(Constans.ACTIVITY_MUSIC == FrontActivity){
+			} else if(frontActivity.equals(Constans.ACTIVITY_MUSIC )){
 				intent.setAction(Constans.MUSIC_END_ACTION_MUSIC);
 			} else {
 				intent.setAction(Constans.MUSIC_END_ACTION_HOME);
@@ -217,4 +242,60 @@ public class MusicService extends Service {
 			sendBroadcast(intent);
 		}
 	}
+	
+	/**
+     * 初始化歌词配置
+     */
+   public void initLrc(){  
+       mLrcProcess = new LrcProcess();  
+       //读取歌词文件  
+       mLrcProcess.readLRC(path);
+       Log.w(TAG, "path");
+       //传回处理后的歌词文件  
+       lrcList = mLrcProcess.getLrcList();  
+       MusicView.lrcView.setmLrcList(lrcList);  
+       //切换带动画显示歌词  
+       MusicView.lrcView.setAnimation(AnimationUtils.loadAnimation(MusicService.this,R.anim.anim)); 
+       // 1.生成Message对象，将Runnable对象赋值给callback属性；2.调用sendMessageDelay（Message msg）将消息发送出去
+       handler.post(mRunnable);  
+   }  
+   /**
+    * 更新歌词
+    */
+   Runnable mRunnable = new Runnable() {  
+         
+
+	@Override  
+       public void run() {  
+    	   MusicView.lrcView.setIndex(lrcIndex(mediaPlayer.getDuration(), mediaPlayer.getCurrentPosition()));  
+    	   MusicView.lrcView.invalidate();  
+           handler.postDelayed(mRunnable, 100);  
+       }  
+   }; 
+
+
+   /** 
+    * 根据时间获取歌词显示的索引值 
+    * @return 
+    */  
+   public int lrcIndex(int duration , int currentTime) {  
+       if(currentTime < duration) {  
+           for (int i = 0; i < lrcList.size(); i++) {  
+               if (i < lrcList.size() - 1) {  
+                   if (currentTime < lrcList.get(i).getLrcTime() && i == 0) {  
+                       index = i;  
+                   }  
+                   if (currentTime > lrcList.get(i).getLrcTime()  
+                           && currentTime < lrcList.get(i + 1).getLrcTime()) {  
+                       index = i;  
+                   }  
+               }  
+               if (i == lrcList.size() - 1  
+                       && currentTime > lrcList.get(i).getLrcTime()) {  
+                   index = i;  
+               }  
+           }  
+       }  
+       return index;  
+   }  
 }
