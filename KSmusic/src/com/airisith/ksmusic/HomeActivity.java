@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.airisith.database.MusicListDatabase;
 import com.airisith.modle.MusicInfo;
 import com.airisith.util.Constans;
 import com.airisith.util.MusicList;
@@ -77,6 +78,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 	private Intent musicIntent; // 启动service的intent
 	private List<String> groupArray = null; // 列表分组group
 	private List<MusicInfo> localMusicLists = null; // 本地音乐列表
+	private List<MusicInfo> userMusicLists = null; // 用户收藏列表
 	private List<MusicInfo> downloadMusicLists = null; // 下载音乐列表
 	private List<MusicInfo> currentMusicList = null; // 当前选择的音乐列表
 	private HashMap<Integer, List<MusicInfo>> musicLists = null; // 将两个列表包装在map中
@@ -109,6 +111,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		} catch (Exception e) {
 		}
 		// 先设为空对象
+		userMusicLists = new ArrayList<MusicInfo>();
 		downloadMusicLists = new ArrayList<MusicInfo>();
 
 		// tab设置
@@ -134,17 +137,21 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 
 		// 加载本地音乐库，默认列表为本地列表
 		musicLists = new HashMap<Integer, List<MusicInfo>>();
-		localMusicLists = MusicList.getMusicInfos(getApplicationContext());
+		localMusicLists = MusicList.getLocaMusicInfos(getApplicationContext());
+//		MusicList.addAllMusicsToDatabase(getApplicationContext(), localMusicLists);
+		userMusicLists = MusicListDatabase.getMusics(getApplicationContext());
 		currentMusicList = localMusicLists;
 		currentListId = 0;
 		musicLists.put(0, localMusicLists);
-		musicLists.put(1, downloadMusicLists);
+		musicLists.put(1, userMusicLists);
+		musicLists.put(2, downloadMusicLists);
 		// expandableListView设置
 		expandableListView.setGroupIndicator(null); // 设置 属性 GroupIndicator
 													// 去掉默认向下的箭头
 		expandableListView.setCacheColorHint(0); // 设置拖动列表的时候防止出现黑色背景
 		groupArray = new ArrayList<String>();
 		groupArray.add(">本地列表" + "(" + localMusicLists.size() + ")");
+		groupArray.add(">我的收藏" + "(" + userMusicLists.size() + ")");
 		groupArray.add(">下载歌曲" + "(" + downloadMusicLists.size() + ")");
 
 		// 将音乐加载到列表,并设置监听器
@@ -212,6 +219,9 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 				currentMusicList = localMusicLists;
 				currentListId = 0;
 			} else if (1 == state[0]) {
+				currentMusicList = userMusicLists;
+				currentListId = 1;
+			} else if(2 == state[0]){
 				currentMusicList = downloadMusicLists;
 				currentListId = 1;
 			}
@@ -310,7 +320,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		if (tabId.equals(TAB_ID_MINE)) {
 			// 更新本地list
 			List<MusicInfo> localLists = MusicList
-					.getMusicInfos(getApplicationContext());
+					.getLocaMusicInfos(getApplicationContext());
 			musicLists.put(0, localLists);
 
 			MusicList.setListAdpter(getApplicationContext(),
@@ -336,6 +346,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			if (0 == groupPosition) {
 				currentMusicList = localMusicLists;
 			} else if (1 == groupPosition) {
+				currentMusicList = userMusicLists;
+			} else if (2 == groupPosition) {
 				currentMusicList = downloadMusicLists;
 			}
 			musicPosition = childPosition;

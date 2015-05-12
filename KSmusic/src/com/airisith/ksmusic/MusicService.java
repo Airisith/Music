@@ -122,8 +122,11 @@ public class MusicService extends Service {
 	@Override
 	public void onDestroy() {
 		if (mediaPlayer != null) {
-			mediaPlayer.stop();
-			mediaPlayer.release();
+			try {
+				mediaPlayer.stop();
+				mediaPlayer.release();
+			} catch (Exception e) {
+			}
 		}
 	}
 

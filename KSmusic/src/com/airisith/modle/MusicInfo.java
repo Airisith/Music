@@ -17,6 +17,7 @@ public class MusicInfo {
 	private long size = 0;
 	private String url = null;
 	private Bitmap album_bitmap = null; // 图片
+	private int type = 0;
 	
 	public long getId() {
 		return id;
@@ -135,6 +136,12 @@ public class MusicInfo {
 		state[1] = sp.getInt("CURRENT_MODE", 3);
 		state[2] = sp.getInt("CURRENT_POSITION", 0);
 		return state;
+	}
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
 	}
 	
 }

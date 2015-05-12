@@ -17,13 +17,18 @@ import android.util.AttributeSet;
  * 
  */
 public class LrcView extends android.widget.TextView {
+	public final static int LIST_TYPE = 0;
+	public final static int SINGLE_TYPE = 1;
 	private float width; // 歌词视图宽度
 	private float height; // 歌词视图高度
 	private Paint currentPaint; // 当前画笔对象
 	private Paint notCurrentPaint; // 非当前画笔对象
 	private float textHeight = 25; // 文本高度
-	private float textSize = 18; // 文本大小
+	private float textSize = 20; // 文本大小
+	private int highLightColor = Color.argb(210, 50, 255, 50);
+	private int textColor = Color.argb(160, 255, 255, 255);
 	private int index = 0; // list集合下标
+	private int viewType = SINGLE_TYPE;
 
 	private List<LrcContent> mLrcList = new ArrayList<LrcContent>();
 
@@ -70,10 +75,10 @@ public class LrcView extends android.widget.TextView {
 			return;
 		}
 
-		currentPaint.setColor(Color.argb(210, 251, 248, 29));
-		notCurrentPaint.setColor(Color.argb(140, 255, 255, 255));
+		currentPaint.setColor(highLightColor);
+		notCurrentPaint.setColor(textColor);
 
-		currentPaint.setTextSize(24);
+		currentPaint.setTextSize(30);
 		currentPaint.setTypeface(Typeface.SERIF);
 
 		notCurrentPaint.setTextSize(textSize);
@@ -85,21 +90,26 @@ public class LrcView extends android.widget.TextView {
 					height / 2, currentPaint);
 
 			float tempY = height / 2;
-			// 画出本句之前的句子
-			for (int i = index - 1; i >= 0; i--) {
-				// 向上推移
-				tempY = tempY - textHeight;
-				canvas.drawText(mLrcList.get(i).getLrcStr(), width / 2, tempY,
-						notCurrentPaint);
+			if(LIST_TYPE == viewType){
+				// 画出本句之前的句子
+				for (int i = index - 1; i >= 0; i--) {
+					// 向上推移
+					tempY = tempY - textHeight;
+					canvas.drawText(mLrcList.get(i).getLrcStr(), width / 2, tempY,
+							notCurrentPaint);
+				}
+				tempY = height / 2;
+				// 画出本句之后的句子
+				for (int i = index + 1; i < mLrcList.size(); i++) {
+					// 往下推移
+					tempY = tempY + textHeight;
+					canvas.drawText(mLrcList.get(i).getLrcStr(), width / 2, tempY,
+							notCurrentPaint);
+				}
+			} else if(SINGLE_TYPE == viewType){
+				
 			}
-			tempY = height / 2;
-			// 画出本句之后的句子
-			for (int i = index + 1; i < mLrcList.size(); i++) {
-				// 往下推移
-				tempY = tempY + textHeight;
-				canvas.drawText(mLrcList.get(i).getLrcStr(), width / 2, tempY,
-						notCurrentPaint);
-			}
+			
 		} catch (Exception e) {
 			setText("无歌词文件");
 		}
@@ -117,6 +127,15 @@ public class LrcView extends android.widget.TextView {
 
 	public void setIndex(int index) {
 		this.index = index;
+	}
+
+	// 显示方式：多行，单行
+	public int getViewType() {
+		return viewType;
+	}
+
+	public void setViewType(int viewType) {
+		this.viewType = viewType;
 	}
 
 }

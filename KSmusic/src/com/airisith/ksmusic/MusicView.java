@@ -12,11 +12,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -35,6 +34,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
+import com.airisith.database.MusicListDatabase;
 import com.airisith.lyric.LrcView;
 import com.airisith.modle.MusicInfo;
 import com.airisith.util.Constans;
@@ -48,6 +48,7 @@ public class MusicView extends Activity {
 	private int playMode = Constans.MODLE_ORDER;
 	private List<MusicInfo> localMusicLists = null;
 	private List<MusicInfo> currentMusicList = null;
+	private List<MusicInfo> userMusicLists = null;
 	private List<MusicInfo> downloadMusicLists = null;
 
 	private Intent musicIntent = null;
@@ -73,7 +74,7 @@ public class MusicView extends Activity {
 	// 歌词控件
 	public static LrcView lrcView;
 	private ImageView albumView;
-	private Boolean lrcAndAlbum = false;
+	private Boolean lrcAndAlbum = true; //默认显示图片和歌词
 
 	private int currentListId = 0;
 
@@ -105,11 +106,13 @@ public class MusicView extends Activity {
 		}
 
 		// 获取音乐列表
-		localMusicLists = MusicList.getMusicInfos(getApplicationContext());
+		localMusicLists = MusicList.getLocaMusicInfos(getApplicationContext());
 		downloadMusicLists = new ArrayList<MusicInfo>();
 		if (0 == currentListId) {
 			currentMusicList = localMusicLists;
-		} else {
+		} else if(1 == currentListId){
+			currentMusicList = userMusicLists;
+		} else if(2 == currentListId){
 			currentMusicList = downloadMusicLists;
 		}
 
@@ -185,8 +188,11 @@ public class MusicView extends Activity {
 				currentMusicList = localMusicLists;
 				currentListId = 0;
 			} else if (1 == state[0]) {
-				currentMusicList = downloadMusicLists;
+				currentMusicList = userMusicLists;
 				currentListId = 1;
+			} else if(2 == currentListId){
+				currentMusicList = downloadMusicLists;
+				currentListId = 2;
 			}
 			playMode = state[1];
 			musicPosition = state[2];
@@ -213,12 +219,16 @@ public class MusicView extends Activity {
 			} else if (Constans.STATE_PUASE == playState) {
 				playImageView.setImageResource(R.drawable.play);
 				MusicService.updataTime(timeHandler, timer, true);
+				upDataAlbum(true);
+				lrcAndAlbum = true;
 			} else {
 				MusicService.updataTime(timeHandler, timer, true);
 				playImageView.setImageResource(R.drawable.puase);
 				// bcap.setImageBitmap(currentMusicInfo.getAlbum_bitmap());
 				titelTextView.setText(currentMusicInfo.getAbbrTitle());
 				artisTextView.setText(currentMusicInfo.getAbbrArtist());
+				upDataAlbum(true);
+				lrcAndAlbum = true;
 			}
 
 		} catch (Exception e) {
@@ -361,10 +371,10 @@ public class MusicView extends Activity {
 				startActivity(intent);
 				break;
 			case R.id.music_like:
-
+				MusicListDatabase.insertMusic(getApplicationContext(), currentMusicInfo);
 				break;
 			case R.id.music_menu:
-
+			
 				break;
 			case R.id.music_order:
 				if (Constans.MODLE_ORDER == playMode) {
@@ -525,16 +535,17 @@ public class MusicView extends Activity {
 		if (visible) {
 			albumView.setImageBitmap(currentMusicInfo.getAlbum_bitmap());
 			albumView.setBackgroundResource(R.drawable.album_back);
+			lrcView.setViewType(LrcView.SINGLE_TYPE);
 		} else {
 			albumView.setImageBitmap(null);
 			albumView.setBackgroundResource(0);
+			lrcView.setViewType(LrcView.LIST_TYPE);
 		}
 	}
 
 	/**
 	 * 点击列表图标弹出的音乐列表
 	 */
-	@SuppressWarnings("deprecation")
 	public void musicListItemDialog() {
 
 		int size = currentMusicList.size();
@@ -543,6 +554,11 @@ public class MusicView extends Activity {
 			String musicTitle = currentMusicList.get(position).getAbbrTitle();
 			musics[position] = musicTitle;
 		}
+		
+//		WindowManager m = getWindowManager();
+//		Display d = m.getDefaultDisplay(); // 获取屏幕宽、高用,结果不起作用
+//		int sWidth = d.getWidth();
+//		int sHeight = d.getHeight();
 
 		// 使用自定义的对话框
 		Builder builder = new AlertDialog.Builder(this);
@@ -550,19 +566,20 @@ public class MusicView extends Activity {
 				.getSystemService(LAYOUT_INFLATER_SERVICE);
 		View layout = inflater.inflate(R.layout.music_musiclist,
 				(ViewGroup) findViewById(R.id.music_listLayout));
+		layout.setBackgroundColor(Color.TRANSPARENT);
+//		layout.setLayoutParams(new ViewGroup.LayoutParams(sWidth/3, sHeight/3));
 		builder.setView(layout);
-
+		
+		
 		// 创建对话框并设置其属性
 		AlertDialog dialog = builder.create();
 		Window window = dialog.getWindow();
 		window.setGravity(Gravity.RIGHT|Gravity.BOTTOM);
-		WindowManager.LayoutParams lp = window.getAttributes();
 		
-		WindowManager m = getWindowManager();
-		Display d = m.getDefaultDisplay(); // 获取屏幕宽、高用,结果不起作用
-		lp.width = (int) (d.getHeight() * 0.5);
-		lp.height = (int) (d.getWidth() * 0.5);
-		window.setAttributes(lp);
+//		WindowManager.LayoutParams lp = window.getAttributes();
+//		lp.width = (int) (d.getHeight() * 0.5);
+//		lp.height = (int) (d.getWidth() * 0.5);
+//		window.setAttributes(lp);
 		dialog.setCanceledOnTouchOutside(true);
 		dialog.setCancelable(true);
 		

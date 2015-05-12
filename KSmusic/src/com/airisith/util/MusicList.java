@@ -2,8 +2,10 @@ package com.airisith.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
+import com.airisith.database.MusicListDatabase;
 import com.airisith.modle.MusicInfo;
 
 import android.content.Context;
@@ -22,7 +24,7 @@ public class MusicList {
 	 * 
 	 * @return
 	 */
-	public static List<MusicInfo> getMusicInfos(Context context) {
+	public static List<MusicInfo> getLocaMusicInfos(Context context) {
 		Cursor cursor = context.getContentResolver().query(
 				MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,null,null,
 				MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
@@ -57,6 +59,7 @@ public class MusicList {
 					musicInfo.setDuration(duration);
 					musicInfo.setSize(size);
 					musicInfo.setUrl(url);
+					musicInfo.setType(Constans.TYPE_LOCAL);
 					// 获取专辑图片
 					try {
 						Bitmap album_bitmap = ArtworkUtils.getArtwork(context, title, 
@@ -88,4 +91,17 @@ public class MusicList {
         ExpandableListAdapter listAdapter = new ExpandableListAdapter(context, groupLists, musicLists);
         expandableListView.setAdapter(listAdapter);
     }  
+    
+    /**
+     * 向数据库中添加多首歌曲
+     * @param context
+     * @param musics
+     */
+    public static void addAllMusicsToDatabase(Context context, List<MusicInfo> musics){
+    	Iterator<MusicInfo> iterator = musics.iterator();
+    	while (iterator.hasNext()) {
+			MusicInfo musicInfo = (MusicInfo) iterator.next();
+			MusicListDatabase.insertMusic(context, musicInfo);
+		}
+    }
 }

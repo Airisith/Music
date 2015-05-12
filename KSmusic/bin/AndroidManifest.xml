@@ -36,8 +36,17 @@
 
         <service android:name="com.airisith.ksmusic.MusicService" >
         </service>
-    </application>
 
+        <provider
+            android:name="com.airisith.database.MusicContentProvider"
+            android:authorities="com.airisith.provider.music"
+            android:exported="true"
+            android:multiprocess="true"
+            android:readPermission="com.airisith.provider.music.READ_CONTACTS"
+            android:writePermission="com.airisith.provider.music.WRITE_CONTACTS" />
+    </application>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 

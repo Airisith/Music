@@ -24,5 +24,8 @@ public class Constans {
 	
 	// 保存数据的名字
 	public final static String PREFERENCES_NAME_MUSIC_STATE = "musicstate";
+	// 定义两种类型：本地音乐类型，网络音乐类型
+	public final static int TYPE_LOCAL = 100;
+	public final static int TYPE_NET = 101;
 
 }
