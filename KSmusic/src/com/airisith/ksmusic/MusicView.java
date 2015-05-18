@@ -369,7 +369,7 @@ public class MusicView extends Activity {
 				userMusicLists = MusicList.getMusicsFromeProvider(getApplicationContext());
 				break;
 			case R.id.music_menu:
-			
+				getMusicInfoDialog();
 				break;
 			case R.id.music_order:
 				if (Constans.MODLE_ORDER == playMode) {
@@ -590,6 +590,20 @@ public class MusicView extends Activity {
 		dialog.show();
 	}
 
+	/**
+	 * 对话框显示歌曲信息
+	 */
+	public void getMusicInfoDialog(){
+		String title = "歌名："+currentMusicInfo.getAbbrTitle();
+		String art = "歌手："+currentMusicInfo.getAbbrArtist();
+		int startIndex = currentMusicInfo.getUrl().indexOf(".");//获取文件后缀位置
+		String type = startIndex>0? currentMusicInfo.getUrl().substring(startIndex+1):"未知";
+		String typeStr = "格式："+type;
+		String time = "时长："+currentMusicInfo.getDurationStr();
+		new AlertDialog.Builder(this).setTitle("歌曲信息").setItems(
+			     new String[] {title, art, typeStr, time}, null).show();
+	}
+	
 	/**
 	 * 列表点击事件
 	 * 

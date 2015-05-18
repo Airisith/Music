@@ -16,6 +16,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 public class BluToothConnect {
 
@@ -38,6 +39,7 @@ public class BluToothConnect {
 		file = new File(filePath);
 		try {
 			FileInputStream fis = new FileInputStream(file);
+			bytes = new byte[fis.available()];
 			fis.read(bytes);
 			fileString = bytes2Hex(bytes);
 			fis.close();
@@ -53,7 +55,7 @@ public class BluToothConnect {
 	 * 
 	 * @return
 	 */
-	public boolean getBluetooth() {
+	public boolean sendFile() {
 		BLdevice = checkBluetooth();
 		if (null != BLdevice) {
 			Log.w(TAG, "已配对设备：" + BLdevice.getName());
@@ -62,6 +64,7 @@ public class BluToothConnect {
 			return true;
 		} else {
 			Log.w(TAG, "无连接设备");
+			 Toast.makeText(context, "无连接设备", Toast.LENGTH_SHORT).show();
 			return false;
 		}
 	}
@@ -135,6 +138,7 @@ public class BluToothConnect {
 				// 或者bluetoothAdapter.enable();
 				Intent intent = new Intent(
 						BluetoothAdapter.ACTION_REQUEST_ENABLE);
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 				context.startActivity(intent);
 			} else {
 				return null;

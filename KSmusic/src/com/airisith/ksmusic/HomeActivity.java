@@ -8,6 +8,7 @@ import java.util.TimerTask;
 
 import com.airisith.database.MusicListDatabase;
 import com.airisith.modle.MusicInfo;
+import com.airisith.util.BluToothConnect;
 import com.airisith.util.Constans;
 import com.airisith.util.MusicList;
 
@@ -638,7 +639,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		builder.setNeutralButton("分享", new AlertDialog.OnClickListener(){
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				
+				String filePath = localMusicLists.get(position).getUrl();
+				new BluToothConnect(getApplicationContext(), filePath).sendFile();
 			}
 		});
 		
@@ -662,7 +664,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		builder.setNegativeButton("分享", new AlertDialog.OnClickListener(){
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				
+				String filePath = userMusicLists.get(position).getUrl();
+				new BluToothConnect(getApplicationContext(), filePath).sendFile();
 			}
 		});
 		AlertDialog dialog = builder.create();
