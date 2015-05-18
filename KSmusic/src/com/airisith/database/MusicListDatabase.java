@@ -32,7 +32,15 @@ public class MusicListDatabase {
 		String eds2 = musicInfo.getUrl().toString();
 		String eds3 = String.valueOf(musicInfo.getType());
 		ContentValues content = new ContentValues();
-		
+		try { //可能查询不到，所以try
+			if (eds1.equals(queryMusic(context, musicInfo).getTitle())) {
+				if (eds2.equals(queryMusic(context, musicInfo).getUrl())) {
+					Toast.makeText(context, "已经添加过这首歌了", Toast.LENGTH_LONG).show();
+					return 0;
+				}
+			} 
+		} catch (Exception e) {
+		}
 		if (!eds1.equals("") && !eds2.equals("") && !eds3.equals("")) {
 			content.put(MusicProvider.MusicColumns.TITLE, eds1);
 			content.put(MusicProvider.MusicColumns.URL, eds2);
@@ -74,6 +82,7 @@ public class MusicListDatabase {
 		} else {
 			Log.e(TAG, "query failure!");
 		}		
+		cursor.close();
 		return music;
 	}
 	
@@ -86,14 +95,14 @@ public class MusicListDatabase {
 	public static void deleteMusic(Context context, MusicInfo musicInfo) {
 		String title = musicInfo.getTitle().toString();
 		String url = musicInfo.getUrl().toString();
-		String type = String.valueOf(musicInfo.getType());
+		//String type = String.valueOf(musicInfo.getType());
 		if (!title.equals("") || !url.equals("")) {
-			HashMap<String, String[]> wheres = wheres(title, url, type);
+			HashMap<String, String[]> wheres = wheres(title, url, ""); //type为空，否则会将所有type匹配的都删除
 			String sql = wheres.get("sql")[0];
 			String[] selectags = wheres.get("selectages");
 			context.getContentResolver().delete(
 					MusicProvider.MusicColumns.CONTENT_URI, sql, selectags);
-
+			Toast.makeText(context, "移除成功", Toast.LENGTH_LONG).show();
 		} else {
 			Toast.makeText(context, "移除失败", Toast.LENGTH_LONG).show();
 		}
@@ -181,7 +190,7 @@ public class MusicListDatabase {
 	public static HashMap<String, String[]> wheres(String eds1, String eds2,
 			String eds3) {
 		HashMap<String, String[]> where = new HashMap<String, String[]>();
-		if (!eds1.equals("") || !eds2.equals("") || !eds3.equals("")) {
+		if (!eds1.equals("") && !eds2.equals("") && !eds3.equals("")) {
 			// 设置查询语句格式
 			String[] sql = { MusicProvider.MusicColumns.TITLE + "=? and "
 					+ MusicProvider.MusicColumns.URL + " =? and"
@@ -191,22 +200,25 @@ public class MusicListDatabase {
 			where.put("selectages", selectages);
 
 		}
-		// 添加列项，实际上只用了上面的一项，他包含了下面几项的信息
-		if (!eds1.equals("") || !eds2.equals("") || !eds3.equals("")) {
+		// 添加筛选条件
+		// type为空
+		if (!eds1.equals("") || !eds2.equals("") && eds3.equals("")) {
 			String[] sql = { MusicProvider.MusicColumns.TITLE + "=? " };
 			String[] selectages = { eds1 };
 			where.put("sql", sql);
 			where.put("selectages", selectages);
 
 		}
-		if (!eds1.equals("") || !eds2.equals("") || !eds3.equals("")) {
+		// type和title都为空
+		if (eds1.equals("") && !eds2.equals("") && eds3.equals("")) {
 			String[] sql = { MusicProvider.MusicColumns.URL + " =?" };
 			String[] selectages = { eds2 };
 			where.put("sql", sql);
 			where.put("selectages", selectages);
 
 		}
-		if (!eds1.equals("") || !eds2.equals("") || !eds3.equals("")) {
+		// title和uri为空
+		if (eds1.equals("") && eds2.equals("") && !eds3.equals("")) {
 			String[] sql = { MusicProvider.MusicColumns.TYPE + " =?" };
 			String[] selectages = { eds3 };
 			where.put("sql", sql);

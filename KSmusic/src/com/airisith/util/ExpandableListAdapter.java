@@ -77,6 +77,10 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 					
 				} catch (Exception e) {
 				}
+				// 给子项设置TAG，用于ExpandableListView长按事件判断是哪个item，这里第一个必须为该项的资源layout或id
+				rowView.setTag(R.layout.musiclist_group, groupPosition);
+				rowView.setTag(R.layout.musiclist_item, childPosition);
+				// 添加到组项，再将组项添加到list
 				rowViews.put(childPosition, rowView);
 				rowViewsList.put(groupPosition, rowViews);
 			}
@@ -118,6 +122,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
 			String groupStr = groupArray.get(groupPosition);
 			groupTextView.setText(groupStr);
 			groupViews.put(groupPosition, groupview);
+			//设置tag，用于ExpandableListView长按事件判断是哪个group，第二个设置为-1，判断是group
+			groupview.setTag(R.layout.musiclist_group, groupPosition);
+			groupview.setTag(R.layout.musiclist_item, -1);
 		}
 		return groupview;
 	}

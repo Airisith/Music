@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.airisith.database.MusicListDatabase;
+import com.airisith.database.MusicProvider;
 import com.airisith.modle.MusicInfo;
 
 import android.content.Context;
@@ -75,7 +76,7 @@ public class MusicList {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		cursor.close();
 		return musicInfosInfos;
 	}
 
@@ -103,5 +104,64 @@ public class MusicList {
 			MusicInfo musicInfo = (MusicInfo) iterator.next();
 			MusicListDatabase.insertMusic(context, musicInfo);
 		}
+    }
+    
+    /**
+     * 将从contentProvider中获得的音乐空的成员填充
+     * @param context
+     * @return
+     */
+    public static List<MusicInfo> getMusicsFromeProvider(Context context){
+    	List<MusicInfo> musics = MusicListDatabase.getMusics(context);
+    	Iterator<MusicInfo> iterator = musics.iterator();
+    	while (iterator.hasNext()) {
+			MusicInfo musicInfo = (MusicInfo) iterator.next();
+			String title = musicInfo.getTitle();
+			// 将provider中的本地音乐的各项成员匹配到musicinfo
+			if (Constans.TYPE_LOCAL == musicInfo.getType()) {
+				Cursor cursor = context.getContentResolver().query(
+						MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
+						MusicProvider.MusicColumns.TITLE + "=?", new String[] { title + "" },
+						MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+				if (cursor != null && cursor.moveToFirst()) {
+					// 需要重新设置路径，因为如果路径变了，歌曲就会找不到
+					String url = cursor.getString(cursor
+							.getColumnIndex(MediaStore.Audio.Media.DATA));
+					long id = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media._ID)); // 音乐id
+					long album_id = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)); // 专辑ID 
+					String artist = cursor.getString(cursor
+							.getColumnIndex(MediaStore.Audio.Media.ARTIST));// 艺术家
+					long duration = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media.DURATION));// 时长
+					long size = cursor.getLong(cursor
+							.getColumnIndex(MediaStore.Audio.Media.SIZE)); // 文件大小
+					int isMusic = cursor.getInt(cursor
+							.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC));// 是否为音乐
+					if (isMusic != 0) { // 只把音乐添加到集合当中
+						musicInfo.setUrl(url);
+						musicInfo.setId(id);
+						musicInfo.setAlbum_id(album_id);
+						musicInfo.setArtist(artist);
+						musicInfo.setDuration(duration);
+						musicInfo.setSize(size);
+						// 获取专辑图片
+						try {
+							Bitmap album_bitmap = ArtworkUtils.getArtwork(context, title, 
+									id, album_id, true);
+							musicInfo.setAlbum_bitmap(album_bitmap);
+						} catch (Exception e) {
+							Log.e(TAG , e.toString());
+						}
+					}
+				} else {
+					Log.e(TAG, "query failure!");
+				}	
+				cursor.close();
+			}
+		}
+    	
+    	return musics;
     }
 }

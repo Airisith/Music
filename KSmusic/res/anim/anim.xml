@@ -3,8 +3,8 @@
 
     <!-- 动画效果，起始和结束透明度，0-1.0 -->
     <alpha
-        android:duration="200"
-        android:fromAlpha="0.2"
-        android:toAlpha="0.2" />
+        android:duration="10"
+        android:fromAlpha="0.5"
+        android:toAlpha="0.5" />
 
 </set>

@@ -107,13 +107,17 @@ public class MusicView extends Activity {
 
 		// 获取音乐列表
 		localMusicLists = MusicList.getLocaMusicInfos(getApplicationContext());
+		userMusicLists = MusicList.getMusicsFromeProvider(getApplicationContext());
 		downloadMusicLists = new ArrayList<MusicInfo>();
 		if (0 == currentListId) {
 			currentMusicList = localMusicLists;
+			Log.w(TAG, "当前list-localMusicLists");
 		} else if(1 == currentListId){
 			currentMusicList = userMusicLists;
+			Log.w(TAG, "当前list-userMusicLists");
 		} else if(2 == currentListId){
 			currentMusicList = downloadMusicLists;
+			Log.w(TAG, "当前list-downloadMusicLists");
 		}
 
 		// 广播接收器，用于一首歌播放完成后继续播放下一首的动作
@@ -252,16 +256,6 @@ public class MusicView extends Activity {
 		super.onStop();
 	}
 
-	// /**
-	// * 返回键设置
-	// */
-	// @Override
-	// public void onBackPressed() {
-	// Log.w(TAG, "onBackPressed") ;
-	// Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-	// intent.putExtra("SERVICE_STATE", playState);
-	// startActivity(intent);
-	// }
 	/**
 	 * 歌曲命令
 	 * 
@@ -372,6 +366,7 @@ public class MusicView extends Activity {
 				break;
 			case R.id.music_like:
 				MusicListDatabase.insertMusic(getApplicationContext(), currentMusicInfo);
+				userMusicLists = MusicList.getMusicsFromeProvider(getApplicationContext());
 				break;
 			case R.id.music_menu:
 			

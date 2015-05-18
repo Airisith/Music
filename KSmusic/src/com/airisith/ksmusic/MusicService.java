@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -15,6 +16,8 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
 
@@ -28,7 +31,6 @@ public class MusicService extends Service {
 	
 	private static MediaPlayer mediaPlayer = new MediaPlayer(); // 媒体播放器对象
 	private String path; // 音乐文件路径
-	@SuppressWarnings("unused")
 	private boolean isPause; // 暂停状态
 	private static String frontActivity = Constans.ACTIVITY_HOME; //当前activity，用于结束广播发送给哪个Activity
 
@@ -95,6 +97,9 @@ public class MusicService extends Service {
 			mediaPlayer.prepare(); // 进行缓冲
 			mediaPlayer.setOnPreparedListener(new PreparedListener(position));// 注册一个player准备好监听器
 			mediaPlayer.setOnCompletionListener(new MusicCompleteListener()); // 注册一个播放结束的监听器
+			TelephonyManager telManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE); // 获取系统服务  
+	        telManager.listen(new MobliePhoneStateListener(),  
+	                PhoneStateListener.LISTEN_CALL_STATE); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -301,4 +306,31 @@ public class MusicService extends Service {
        }  
        return index;  
    }  
+   
+   /**
+	 * 电话监听器类
+	 * @author 
+	 * 
+	 */
+	private class MobliePhoneStateListener extends PhoneStateListener {
+		@Override
+		public void onCallStateChanged(int state, String incomingNumber) {
+			switch (state) {
+			case TelephonyManager.CALL_STATE_IDLE: // 挂机状态
+				if (isPause) {
+					mediaPlayer.start();
+					isPause = false;
+				}
+				break;
+			case TelephonyManager.CALL_STATE_OFFHOOK:	//通话状态
+			case TelephonyManager.CALL_STATE_RINGING:	//响铃状态
+				if(mediaPlayer.isPlaying()){
+					pause();
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
 }

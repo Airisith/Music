@@ -14,9 +14,12 @@ import com.airisith.util.MusicList;
 import android.R.integer;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
@@ -37,6 +40,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
@@ -117,11 +121,11 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		// tab设置
 		tabHost = (TabHost) findViewById(R.id.tabhost);
 		tabHost.setup();
-		TabHost.TabSpec specMine = tabHost.newTabSpec("TAB_ID_MINE");
+		TabHost.TabSpec specMine = tabHost.newTabSpec(TAB_ID_MINE);
 		specMine.setContent(R.id.home_tabFirst);
 		specMine.setIndicator("我的", null);
 		tabHost.addTab(specMine);
-		TabHost.TabSpec specLib = tabHost.newTabSpec("TAB_ID_LIB");
+		TabHost.TabSpec specLib = tabHost.newTabSpec(TAB_ID_LIB);
 		specLib.setContent(R.id.home_tabSecond);
 		specLib.setIndicator("音乐库", null);
 		tabHost.addTab(specLib);
@@ -137,28 +141,6 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 
 		// 加载本地音乐库，默认列表为本地列表
 		musicLists = new HashMap<Integer, List<MusicInfo>>();
-		localMusicLists = MusicList.getLocaMusicInfos(getApplicationContext());
-//		MusicList.addAllMusicsToDatabase(getApplicationContext(), localMusicLists);
-		userMusicLists = MusicListDatabase.getMusics(getApplicationContext());
-		currentMusicList = localMusicLists;
-		currentListId = 0;
-		musicLists.put(0, localMusicLists);
-		musicLists.put(1, userMusicLists);
-		musicLists.put(2, downloadMusicLists);
-		// expandableListView设置
-		expandableListView.setGroupIndicator(null); // 设置 属性 GroupIndicator
-													// 去掉默认向下的箭头
-		expandableListView.setCacheColorHint(0); // 设置拖动列表的时候防止出现黑色背景
-		groupArray = new ArrayList<String>();
-		groupArray.add(">本地列表" + "(" + localMusicLists.size() + ")");
-		groupArray.add(">我的收藏" + "(" + userMusicLists.size() + ")");
-		groupArray.add(">下载歌曲" + "(" + downloadMusicLists.size() + ")");
-
-		// 将音乐加载到列表,并设置监听器
-		MusicList.setListAdpter(getApplicationContext(), expandableListView,
-				musicLists, groupArray);
-		expandableListView
-				.setOnChildClickListener(new MusicListItemClickListener());
 
 		// 创建Intent对象，准备启动MusicService
 		musicIntent = new Intent(getApplicationContext(), MusicService.class);
@@ -202,6 +184,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 	@Override
 	protected void onStart() {
 		Log.w(TAG, "onStart");
+		updataMusicList();
 		super.onStart();
 		turnTOback = false;
 		// 通知service，页面发生改变
@@ -221,9 +204,9 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			} else if (1 == state[0]) {
 				currentMusicList = userMusicLists;
 				currentListId = 1;
-			} else if(2 == state[0]){
+			} else if (2 == state[0]) {
 				currentMusicList = downloadMusicLists;
-				currentListId = 1;
+				currentListId = 2;
 			}
 			playMode = state[1];
 			musicPosition = state[2];
@@ -318,16 +301,16 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 	public void onTabChanged(String tabId) {
 		updateTab(tabHost);
 		if (tabId.equals(TAB_ID_MINE)) {
-			// 更新本地list
-			List<MusicInfo> localLists = MusicList
-					.getLocaMusicInfos(getApplicationContext());
-			musicLists.put(0, localLists);
-
-			MusicList.setListAdpter(getApplicationContext(),
-					expandableListView, musicLists, groupArray);
-			expandableListView
-					.setOnChildClickListener(new MusicListItemClickListener());
-			localMusicLists = localLists;
+//			// 更新本地list
+//			List<MusicInfo> localLists = MusicList
+//					.getLocaMusicInfos(getApplicationContext());
+//			List<MusicInfo> userLists = MusicList
+//					.getMusicsFromeProvider(getApplicationContext());
+//			localMusicLists = localLists;
+//			userMusicLists = userLists;
+//		
+//			MusicList.setListAdpter(getApplicationContext(),
+//					expandableListView, musicLists, groupArray);
 		}
 	}
 
@@ -345,15 +328,60 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 
 			if (0 == groupPosition) {
 				currentMusicList = localMusicLists;
+				currentListId = 0;
+				Log.w(TAG, "选中localMusicLists");
 			} else if (1 == groupPosition) {
 				currentMusicList = userMusicLists;
+				currentListId = 1;
+				Log.w(TAG, "选中userMusicLists");
 			} else if (2 == groupPosition) {
 				currentMusicList = downloadMusicLists;
+				currentListId = 2;
+				Log.w(TAG, "选中downloadMusicLists");
 			}
 			musicPosition = childPosition;
 			MusicCommad(currentMusicList, Constans.PLAY_CMD, musicPosition, 0,
 					true);
 			return false;
+		}
+	}
+
+	/**
+	 * expandableListView的子列表Item长点击事件监听器,
+	 * 前提是在adapter中分别对groupView和childView设置了tag
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	private class onItemLongclichedListener implements OnItemLongClickListener {
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+				int arg2, long arg3) {
+			int groupPos = (Integer) arg1.getTag(R.layout.musiclist_group); // 参数值是在setTag时使用的对应资源id号
+			int childPos = (Integer) arg1.getTag(R.layout.musiclist_item);
+			if (childPos == -1) {// 长按的是父项
+				// 根据groupPos判断长按的是哪个父项，做相应处理（弹框等）
+			} else {
+				// 根据groupPos及childPos判断长按的是哪个父项下的哪个子项，然后做相应处理。
+				switch (groupPos) {
+				case 0: //第一个列表，本地列表
+					localListDialog(childPos);
+					break;
+				case 1: //第二个列表，收藏列表
+					luserListDialog(childPos);
+					break;
+				case 2: //第三个列表，下载列表
+					
+					break;
+					
+					
+				default:
+					break;
+				}
+			}
+			// 这里设置为true，否则长按也会触发点击事件
+			return true;
 		}
 	}
 
@@ -383,7 +411,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 			musicIntent.putExtra("url", musicInfo.getUrl());
 			musicIntent.putExtra("CMD", playCommand);
 			musicIntent.putExtra("rate", rate);
-			startService(musicIntent); //启动服务
+			startService(musicIntent); // 启动服务
 			bTitle.setText(musicInfo.getAbbrTitle());
 			bArtis.setText(musicInfo.getArtist());
 			bPlay.setImageResource(R.drawable.puase);
@@ -396,7 +424,7 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 					currentListId, playMode, musicPosition);
 			Log.w(TAG, "保存歌曲信息：list,mode,position:" + currentListId + playMode
 					+ musicPosition);
-		} 
+		}
 	}
 
 	/**
@@ -540,8 +568,8 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 					stopService(musicIntent);
 				} catch (Exception e) {
 				}
-				//finish();
-				System.exit(0); //退出整个程序，否则service，MusicView未退出，下次打开再次启动service会出错
+				// finish();
+				System.exit(0); // 退出整个程序，否则service，MusicView未退出，下次打开再次启动service会出错
 			}
 			return true;
 		case KeyEvent.KEYCODE_CALL:
@@ -556,5 +584,88 @@ public class HomeActivity extends Activity implements OnTabChangeListener {
 		}
 		Log.w(TAG, "return super.onKeyDown(keyCode, event);");
 		return super.onKeyDown(keyCode, event);
+	}
+	
+	/**
+	 * 刷新歌曲列表
+	 */
+	private void updataMusicList(){
+		localMusicLists = MusicList.getLocaMusicInfos(getApplicationContext());
+		userMusicLists = MusicList
+				.getMusicsFromeProvider(getApplicationContext());
+		currentMusicList = localMusicLists;
+		currentListId = 0;
+		musicLists.put(0, localMusicLists);
+		musicLists.put(1, userMusicLists);
+		musicLists.put(2, downloadMusicLists);
+		// expandableListView设置
+		expandableListView.setGroupIndicator(null); // 设置 属性 GroupIndicator
+													// 去掉默认向下的箭头
+		expandableListView.setCacheColorHint(0); // 设置拖动列表的时候防止出现黑色背景
+		groupArray = new ArrayList<String>();
+		groupArray.add(">本地列表" + "(" + localMusicLists.size() + ")");
+		groupArray.add(">我的收藏" + "(" + userMusicLists.size() + ")");
+		groupArray.add(">下载歌曲" + "(" + downloadMusicLists.size() + ")");
+
+		// 将音乐加载到列表,并设置监听器
+		MusicList.setListAdpter(getApplicationContext(), expandableListView,
+				musicLists, groupArray);
+		expandableListView
+				.setOnChildClickListener(new MusicListItemClickListener());
+		expandableListView
+				.setOnItemLongClickListener(new onItemLongclichedListener());
+	}
+	
+	/**
+	 * 本地列表歌曲长按弹出对话框
+	 * @param position
+	 */
+	private void localListDialog(final int position){
+		AlertDialog.Builder builder = new Builder(HomeActivity.this);
+		builder.setPositiveButton("收藏", new AlertDialog.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				MusicListDatabase.insertMusic(getApplicationContext(), localMusicLists.get(position));
+				updataMusicList();
+			}
+		});
+		builder.setNegativeButton("删除", new AlertDialog.OnClickListener(){
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+			}
+		});
+		builder.setNeutralButton("分享", new AlertDialog.OnClickListener(){
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+			}
+		});
+		
+		AlertDialog dialog = builder.create();
+		dialog.show();
+	}
+	
+	/**
+	 * 收藏列表弹出对话框
+	 * @param position
+	 */
+	private void luserListDialog(final int position){
+		AlertDialog.Builder builder = new Builder(HomeActivity.this);
+		builder.setPositiveButton("移除", new AlertDialog.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				MusicListDatabase.deleteMusic(getApplicationContext(), userMusicLists.get(position));
+				updataMusicList();
+			}
+		});
+		builder.setNegativeButton("分享", new AlertDialog.OnClickListener(){
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+			}
+		});
+		AlertDialog dialog = builder.create();
+		dialog.show();
 	}
 }
